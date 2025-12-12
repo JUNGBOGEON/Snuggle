@@ -7,12 +7,9 @@ interface PostCardProps {
     content: string | null
     thumbnail_url: string | null
     created_at: string
-    blogs: {
+    blog: {
       name: string
-      profiles: {
-        nickname: string
-        profile_image_url: string | null
-      } | null
+      thumbnail_url: string | null
     } | null
   }
 }
@@ -23,9 +20,8 @@ function stripHtml(html: string): string {
 }
 
 export default function PostCard({ post }: PostCardProps) {
-  const blogName = post.blogs?.name || '알 수 없음'
-  const authorName = post.blogs?.profiles?.nickname || blogName
-  const authorImage = post.blogs?.profiles?.profile_image_url
+  const blogName = post.blog?.name || '알 수 없음'
+  const blogImage = post.blog?.thumbnail_url
   const preview = post.content ? stripHtml(post.content).slice(0, 100) : ''
   const date = new Date(post.created_at).toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -59,21 +55,21 @@ export default function PostCard({ post }: PostCardProps) {
               </p>
             )}
 
-            {/* 작성자 정보 */}
+            {/* 블로그 정보 */}
             <div className="mt-3 flex items-center gap-2">
-              {authorImage ? (
+              {blogImage ? (
                 <img
-                  src={authorImage}
-                  alt={authorName}
+                  src={blogImage}
+                  alt={blogName}
                   className="h-5 w-5 rounded-full object-cover"
                 />
               ) : (
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-black/10 text-xs dark:bg-white/10">
-                  {authorName.charAt(0)}
+                  {blogName.charAt(0)}
                 </div>
               )}
               <span className="text-xs text-black/50 dark:text-white/50">
-                {authorName} · {date}
+                {blogName} · {date}
               </span>
             </div>
           </div>

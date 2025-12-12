@@ -10,12 +10,9 @@ interface Post {
   content: string | null
   thumbnail_url: string | null
   created_at: string
-  blogs: {
+  blog: {
     name: string
-    profiles: {
-      nickname: string
-      profile_image_url: string | null
-    } | null
+    thumbnail_url: string | null
   } | null
 }
 
@@ -27,19 +24,7 @@ export default function PostList() {
     const fetchPosts = async () => {
       try {
         const data = await getPosts(20, 0)
-        // API 응답을 컴포넌트 형식으로 변환
-        const postsWithDetails: Post[] = data.map(post => ({
-          id: post.id,
-          title: post.title,
-          content: post.content,
-          thumbnail_url: post.thumbnail_url,
-          created_at: post.created_at,
-          blogs: post.blog ? {
-            name: post.blog.name,
-            profiles: post.blog.profile,
-          } : null,
-        }))
-        setPosts(postsWithDetails)
+        setPosts(data)
       } catch (err) {
         console.error('Error fetching posts:', err)
       }

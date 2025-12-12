@@ -48,10 +48,7 @@ export interface PostListItem {
   blog_id: string
   blog: {
     name: string
-    profile: {
-      nickname: string
-      profile_image_url: string | null
-    } | null
+    thumbnail_url: string | null
   } | null
 }
 

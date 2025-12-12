@@ -7,6 +7,7 @@ import LoginModal from '@/components/auth/LoginModal'
 import UserMenu from '@/components/auth/UserMenu'
 import PostList from '@/components/blog/PostList'
 import MyBlogSidebar from '@/components/blog/MyBlogSidebar'
+import { syncProfile } from '@/lib/api/profile'
 import type { User } from '@supabase/supabase-js'
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
@@ -27,14 +28,22 @@ export default function Home() {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
       setLoading(false)
+      // 로그인된 사용자가 있으면 프로필 동기화
+      if (user) {
+        syncProfile()
+      }
     }
 
     getUser()
 
     // 인증 상태 변경 감지
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      (event, session) => {
         setUser(session?.user ?? null)
+        // 로그인 시 프로필 동기화
+        if (event === 'SIGNED_IN' && session?.user) {
+          syncProfile()
+        }
       }
     )
 
