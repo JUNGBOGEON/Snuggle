@@ -26,11 +26,31 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
+
+  /* 블로그 스킨 기본값 */
+  --blog-bg: #ffffff;
+  --blog-fg: #000000;
+  --blog-accent: #000000;
+  --blog-muted: rgba(0, 0, 0, 0.6);
+  --blog-border: rgba(0, 0, 0, 0.1);
+  --blog-card-bg: #ffffff;
+  --blog-font-sans: 'GMarketSans', sans-serif;
+  --blog-font-mono: 'Fira Code', ui-monospace, monospace;
+  --blog-content-width: 768px;
+  --blog-border-radius: 0.5rem;
 }
 
 .dark {
   --background: #000000;
   --foreground: #ffffff;
+
+  /* 다크모드 블로그 스킨 기본값 */
+  --blog-dark-bg: #000000;
+  --blog-dark-fg: #ffffff;
+  --blog-dark-accent: #ffffff;
+  --blog-dark-muted: rgba(255, 255, 255, 0.6);
+  --blog-dark-border: rgba(255, 255, 255, 0.1);
+  --blog-dark-card-bg: #18181b;
 }
 
 @theme inline {

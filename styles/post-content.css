@@ -6,11 +6,12 @@
 .post-content {
     font-size: 1.125rem;
     line-height: 1.75;
-    color: #1a1a1a;
+    color: var(--blog-fg, #1a1a1a);
+    font-family: var(--blog-font-sans, 'GMarketSans', sans-serif);
 }
 
 .dark .post-content {
-    color: #e5e5e5;
+    color: var(--blog-dark-fg, #e5e5e5);
 }
 
 /* 제목 스타일 */
@@ -18,33 +19,33 @@
     font-size: 2rem;
     font-weight: 700;
     margin: 2rem 0 1rem;
-    color: #000;
+    color: var(--blog-fg, #000);
 }
 
 .dark .post-content h1 {
-    color: #fff;
+    color: var(--blog-dark-fg, #fff);
 }
 
 .post-content h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 1.75rem 0 0.75rem;
-    color: #000;
+    color: var(--blog-fg, #000);
 }
 
 .dark .post-content h2 {
-    color: #fff;
+    color: var(--blog-dark-fg, #fff);
 }
 
 .post-content h3 {
     font-size: 1.25rem;
     font-weight: 600;
     margin: 1.5rem 0 0.5rem;
-    color: #000;
+    color: var(--blog-fg, #000);
 }
 
 .dark .post-content h3 {
-    color: #fff;
+    color: var(--blog-dark-fg, #fff);
 }
 
 /* 본문 스타일 */
@@ -90,8 +91,8 @@
 /* 코드 블록 스타일 */
 .post-content pre {
     background: #f6f8fa;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
+    border: 1px solid var(--blog-border, rgba(0, 0, 0, 0.1));
+    border-radius: var(--blog-border-radius, 0.5rem);
     padding: 1rem;
     margin: 1.5rem 0;
     overflow-x: auto;
@@ -99,12 +100,12 @@
 
 .dark .post-content pre {
     background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--blog-dark-border, rgba(255, 255, 255, 0.1));
 }
 
 .post-content pre code,
 .post-content pre code.hljs {
-    font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--blog-font-mono, 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 0.875rem;
     line-height: 1.7;
     display: block;

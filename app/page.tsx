@@ -71,7 +71,7 @@ export default function Home() {
           {/* Navigation */}
           <nav className="flex items-center gap-8">
             <a
-              href="#"
+              href="/"
               className="text-sm font-medium text-black dark:text-white"
             >
               홈
@@ -83,7 +83,7 @@ export default function Home() {
               피드
             </a>
             <a
-              href="#"
+              href="/skins"
               className="text-sm font-medium text-black/60 dark:text-white/60"
             >
               스킨
