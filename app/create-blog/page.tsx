@@ -29,17 +29,7 @@ export default function CreateBlogPage() {
         return
       }
 
-      // 이미 블로그가 있는지 확인
-      const { data: blog } = await supabase
-        .from('blogs')
-        .select('id')
-        .eq('user_id', user.id)
-        .single()
-
-      if (blog) {
-        router.push('/')
-        return
-      }
+      // 다중 블로그 지원 - 블로그가 있어도 새로 생성 가능
 
       setUser(user)
       setCheckingAuth(false)

@@ -318,23 +318,27 @@ export default function WritePage() {
 
             setUser(user)
 
-            // 블로그 정보 가져오기
-            const { data: blogData } = await supabase
+            // 블로그 정보 가져오기 (다중 블로그 지원)
+            const { data: blogList } = await supabase
                 .from('blogs')
                 .select('id, name')
                 .eq('user_id', user.id)
-                .single()
+                .is('deleted_at', null)
+                .order('created_at', { ascending: true })
 
-            if (!blogData) {
+            if (!blogList || blogList.length === 0) {
                 router.push('/create-blog')
                 return
             }
 
-            setBlog(blogData)
+            // 활성 블로그 또는 첫 번째 블로그 사용
+            const savedBlogId = typeof window !== 'undefined' ? localStorage.getItem('activeBlogId') : null
+            const activeBlog = blogList.find(b => b.id === savedBlogId) || blogList[0]
+            setBlog(activeBlog)
 
             // 카테고리 정보 가져오기 (백엔드 API 사용)
             try {
-                const categoryData = await getCategories(blogData.id)
+                const categoryData = await getCategories(activeBlog.id)
                 setCategories(categoryData.map(c => ({ id: c.id, name: c.name })))
             } catch (err) {
                 console.error('Failed to load categories:', err)

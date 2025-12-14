@@ -82,7 +82,7 @@ export default function UserMenu() {
           {/* 메뉴 */}
           <div className="space-y-1">
             <a
-              href="/account"
+              href="/setting"
               className="block rounded-lg px-3 py-2 text-sm text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5"
             >
               계정 관리
