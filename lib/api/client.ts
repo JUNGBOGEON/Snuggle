@@ -1,15 +1,16 @@
 import { createClient } from '@/lib/supabase/client'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
+// API Base URL - 다른 파일에서도 사용할 수 있도록 export
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'
 
 export async function fetchWithAuth(endpoint: string, options: RequestInit = {}) {
     const supabase = createClient()
     const { data: { session } } = await supabase.auth.getSession()
     const token = session?.access_token
 
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        ...options.headers as any,
+        ...(options.headers as Record<string, string>),
     }
 
     if (token) {
@@ -29,8 +30,11 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
         try {
             const errorData = await response.json()
             throw new Error(errorData.error || 'API Request failed')
-        } catch (e: any) {
-            throw new Error(e.message || 'API Request failed')
+        } catch (e) {
+            if (e instanceof Error) {
+                throw e
+            }
+            throw new Error('API Request failed')
         }
     }
 
