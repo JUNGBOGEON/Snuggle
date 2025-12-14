@@ -16,7 +16,8 @@ export interface Post {
   content: string
   category_id: string | null
   published: boolean
-  is_private?: boolean // 추가
+  is_private?: boolean
+  is_allow_comment?: boolean // 추가
   thumbnail_url: string | null
   created_at: string
   updated_at: string
@@ -95,8 +96,7 @@ export async function getPost(id: string): Promise<PostWithDetails | null> {
   }
 
   const response = await fetch(`${API_URL}/api/posts/${id}`, { headers })
-
-  if (response.status === 404) {
+  if (response.status === 404 || response.status === 403) {
     return null
   }
 
@@ -114,6 +114,9 @@ export async function createPost(data: {
   content: string
   category_ids?: string[]
   published?: boolean
+  is_private?: boolean
+  is_allow_comment?: boolean
+  thumbnail_url?: string | null
 }): Promise<Post> {
   const token = await getAuthToken()
 
@@ -146,7 +149,9 @@ export async function updatePost(
     content?: string
     category_ids?: string[]
     published?: boolean
-    is_private?: boolean // 추가
+    is_private?: boolean
+    is_allow_comment?: boolean
+    thumbnail_url?: string | null
   }
 ): Promise<Post> {
   const token = await getAuthToken()
@@ -236,7 +241,6 @@ export async function getFeedPosts(userId: string, limit = 14): Promise<PostList
       user_id
     `)
     .in('user_id', subscribedUserIds)  // 구독한 유저들의 글만 필터링
-    .eq('published', true)             // 공개된 글만
     .order('created_at', { ascending: false })
     .limit(limit)
 

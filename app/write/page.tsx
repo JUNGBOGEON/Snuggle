@@ -47,8 +47,10 @@ function extractImageUrls(html: string): string[] {
 // 분리된 컴포넌트들
 import WriteHeader from '@/components/write/WriteHeader'
 import EditorToolbar from '@/components/write/EditorToolbar'
+
 import TitleInput from '@/components/write/TitleInput'
 import CategorySelector from '@/components/write/CategorySelector'
+import PublishDrawer from '@/components/write/PublishDrawer'
 
 // 에디터 전용 스타일
 import '@/components/write/editor.css'
@@ -409,20 +411,36 @@ function WriteContent() {
         }
     }
 
-    // 발행하기 / 수정하기
-    const handlePublish = async () => {
-        if (!editor || !blog || !title.trim()) {
+    // 발행 서랍 상태
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+
+    // 발행하기 버튼 클릭 -> 서랍 열기
+    const handlePublishClick = () => {
+        if (!title.trim()) {
             alert('제목을 입력해주세요.')
             return
         }
 
-        const content = editor.getHTML()
-        if (content === '<p></p>' || !content.trim()) {
+        const content = editor?.getHTML()
+        if (!content || content === '<p></p>' || !content.trim()) {
             alert('내용을 입력해주세요.')
             return
         }
 
+        setIsDrawerOpen(true)
+    }
+
+    // 최종 발행 (서랍에서 확인 클릭 시)
+    const handleConfirmPublish = async (options: {
+        isPrivate: boolean
+        allowComments: boolean
+        thumbnailUrl: string | null
+    }) => {
+        if (!editor || !blog) return
+
+        const content = editor.getHTML()
         setSaving(true)
+        setIsDrawerOpen(false)
 
         try {
             if (isEditMode && editPostId) {
@@ -431,7 +449,9 @@ function WriteContent() {
                     title: title.trim(),
                     content: content,
                     category_ids: categoryIds,
-                    // published, is_private 등은 여기서 변경 안함 (기존 유지)
+                    is_private: options.isPrivate,
+                    is_allow_comment: options.allowComments,
+                    thumbnail_url: options.thumbnailUrl, // 썸네일 수동 지정
                 })
                 alert('게시글이 수정되었습니다.')
             } else {
@@ -441,7 +461,10 @@ function WriteContent() {
                     title: title.trim(),
                     content: content,
                     category_ids: categoryIds,
-                    published: true, // 기본 공개
+                    published: true, // published는 true로 고정하되, is_private로 제어
+                    is_private: options.isPrivate,
+                    is_allow_comment: options.allowComments,
+                    thumbnail_url: options.thumbnailUrl,
                 })
 
                 // 발행 성공 시 초안 삭제
@@ -478,7 +501,7 @@ function WriteContent() {
             <WriteHeader
                 onBack={() => router.back()}
                 onSave={handleSave}
-                onPublish={handlePublish}
+                onPublish={handlePublishClick} // 이전 handlePublish 대신 handlePublishClick 사용
                 saving={saving}
                 isEdit={isEditMode} // 헤더에 수정 모드 전달 (버튼 텍스트 변경 등)
             />
@@ -508,6 +531,19 @@ function WriteContent() {
                 {/* Tiptap 에디터 */}
                 <EditorContent editor={editor} className="min-h-[500px]" />
             </main>
+
+            {/* 발행 옵션 서랍 */}
+            <PublishDrawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                onConfirm={handleConfirmPublish}
+                // 기존 값 전달 (수정 시 유용하겠지만 현재는 기본값 사용)
+                initialValues={{
+                    isPrivate: false, // 기본값
+                    allowComments: true, // 기본값
+                    thumbnailUrl: null, // 에디터 내용 기반 자동 추출 or 기존 썸네일
+                }}
+            />
         </div>
     )
 }

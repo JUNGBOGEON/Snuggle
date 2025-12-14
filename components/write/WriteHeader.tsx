@@ -3,6 +3,7 @@ interface WriteHeaderProps {
     onSave: () => void
     onPublish: () => void
     saving: boolean
+    isEdit?: boolean
 }
 
 export default function WriteHeader({
@@ -10,6 +11,7 @@ export default function WriteHeader({
     onSave,
     onPublish,
     saving,
+    isEdit,
 }: WriteHeaderProps) {
     return (
         <header className="sticky top-0 z-50 border-b border-black/10 bg-white/80 backdrop-blur-sm dark:border-white/10 dark:bg-black/80">
@@ -47,7 +49,7 @@ export default function WriteHeader({
                         disabled={saving}
                         className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/80 disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/80"
                     >
-                        {saving ? '발행 중...' : '발행'}
+                        {saving ? '저장 중...' : (isEdit ? '수정하기' : '발행하기')}
                     </button>
                 </div>
             </div>

@@ -101,11 +101,7 @@ export default function BlogPostList({ blogId, isOwner }: BlogPostListProps) {
                   <h3 className="truncate font-semibold text-[var(--blog-fg)] group-hover:opacity-80">
                     {post.title}
                   </h3>
-                  {!post.published && (
-                    <span className="shrink-0 rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800">
-                      비공개
-                    </span>
-                  )}
+
                 </div>
                 <p className="mt-1.5 line-clamp-2 text-sm text-[var(--blog-muted)]">
                   {getExcerpt(post.content, 150)}
