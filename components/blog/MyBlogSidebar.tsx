@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { useUserStore } from '@/lib/store/useUserStore'
 import ProfileImage from '@/components/common/ProfileImage'
 
 interface Blog {
@@ -12,11 +12,8 @@ interface Blog {
   thumbnail_url: string | null
 }
 
-interface MyBlogSidebarProps {
-  user: User | null
-}
-
-export default function MyBlogSidebar({ user }: MyBlogSidebarProps) {
+export default function MyBlogSidebar() {
+  const { user } = useUserStore()
   const [blog, setBlog] = useState<Blog | null>(null)
   const [loading, setLoading] = useState(true)
 
