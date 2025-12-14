@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useUserStore } from '@/lib/store/useUserStore'
 import ProfileImage from '@/components/common/ProfileImage'
+import KakaoLoginButton from '@/components/auth/KakaoLoginButton'
 
 interface Blog {
   id: string
@@ -49,6 +50,9 @@ export default function MyBlogSidebar() {
         <p className="mt-2 text-sm text-black/50 dark:text-white/50">
           로그인하고 나만의 블로그를 시작하세요
         </p>
+        <div className="mt-4">
+          <KakaoLoginButton />
+        </div>
       </div>
     )
   }
