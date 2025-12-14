@@ -48,7 +48,7 @@ export default function Home() {
               홈
             </a>
             <a
-              href="#"
+              href="/feed"
               className="text-sm font-medium text-black/60 dark:text-white/60"
             >
               피드
