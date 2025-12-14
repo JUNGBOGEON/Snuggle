@@ -19,22 +19,18 @@ function SearchContent() {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (!query) {
-            setPosts([])
-            setBlogs([])
-            return
-        }
+        if (!query) return
 
         const fetchResults = async () => {
             setLoading(true)
             try {
-                // 두 결과를 동시에 가져와서 개수 표시
-                const [postsResults, blogsResults] = await Promise.all([
-                    searchPosts(query),
-                    searchBlogs(query),
-                ])
-                setPosts(postsResults)
-                setBlogs(blogsResults)
+                if (activeTab === 'posts') {
+                    const results = await searchPosts(query)
+                    setPosts(results)
+                } else {
+                    const results = await searchBlogs(query)
+                    setBlogs(results)
+                }
             } catch (error) {
                 console.error('Search error:', error)
             }
@@ -42,7 +38,7 @@ function SearchContent() {
         }
 
         fetchResults()
-    }, [query])
+    }, [query, activeTab])
 
     const renderResults = () => {
         if (!query) {
@@ -66,7 +62,7 @@ function SearchContent() {
                                 ...post,
                                 blog: post.blog ? {
                                     name: post.blog.name,
-                                    thumbnail_url: null,
+                                    thumbnail_url: post.blog.thumbnail_url,
                                 } : null,
                             }}
                         />
@@ -101,12 +97,7 @@ function SearchContent() {
                     </div>
                 )}
 
-                <SearchTabs
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                    postsCount={query ? posts.length : undefined}
-                    blogsCount={query ? blogs.length : undefined}
-                />
+                <SearchTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
                 {renderResults()}
             </main>
