@@ -44,8 +44,18 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   }, [theme, mounted])
 
   const handleSetTheme = (newTheme: Theme) => {
+    const root = document.documentElement
+
+    // 테마 전환 시에만 transition 활성화
+    root.classList.add('theme-transitioning')
+
     setTheme(newTheme)
     localStorage.setItem('theme', newTheme)
+
+    // transition 완료 후 클래스 제거
+    setTimeout(() => {
+      root.classList.remove('theme-transitioning')
+    }, 300)
   }
 
   if (!mounted) {

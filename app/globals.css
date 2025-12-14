@@ -26,11 +26,46 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
+
+  /* 블로그 스킨 기본값 */
+  --blog-bg: #ffffff;
+  --blog-fg: #000000;
+  --blog-accent: #000000;
+  --blog-muted: rgba(0, 0, 0, 0.6);
+  --blog-border: rgba(0, 0, 0, 0.1);
+  --blog-card-bg: #ffffff;
+  --blog-font-sans: 'GMarketSans', sans-serif;
+  --blog-font-mono: 'Fira Code', ui-monospace, monospace;
+  --blog-content-width: 768px;
+  --blog-border-radius: 0.5rem;
 }
 
 .dark {
   --background: #000000;
   --foreground: #ffffff;
+
+  /* 다크모드 블로그 스킨 기본값 */
+  --blog-dark-bg: #000000;
+  --blog-dark-fg: #ffffff;
+  --blog-dark-accent: #ffffff;
+  --blog-dark-muted: rgba(255, 255, 255, 0.6);
+  --blog-dark-border: rgba(255, 255, 255, 0.1);
+  --blog-dark-card-bg: #18181b;
+}
+
+/*
+ * 블로그 스킨 스코프
+ * 시스템 다크 모드의 영향을 받지 않고 스킨 자체 CSS 변수만 사용
+ */
+.blog-skin-scope {
+  /* 스킨 컨테이너는 시스템 테마와 독립적 */
+  color-scheme: light dark;
+}
+
+/* blog-skin-scope 내부에서는 dark 클래스 무시 - 스킨 변수만 사용 */
+.blog-skin-scope,
+.blog-skin-scope * {
+  /* 스킨 영역에서는 dark: 변형이 적용되지 않도록 함 */
 }
 
 @theme inline {
@@ -43,14 +78,14 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: 'GMarketSans', sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* 자연스러운 테마 전환 */
-*,
-*::before,
-*::after {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+/* 다크모드 전환 시에만 transition 적용 */
+.theme-transitioning,
+.theme-transitioning *,
+.theme-transitioning *::before,
+.theme-transitioning *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease !important;
 }
 
 /* 슬라이드 인 애니메이션 */

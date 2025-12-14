@@ -6,8 +6,23 @@ import { createClient } from '@/lib/supabase/client'
 import { uploadImage } from '@/lib/api/upload'
 import { getBlogPosts, updatePost, deletePost as deletePostApi, Post } from '@/lib/api/posts'
 import { getCategories, createCategory, deleteCategory } from '@/lib/api/categories'
+import {
+  getSystemSkins,
+  getBlogSkin,
+  applySkin,
+  saveSkinCustomization,
+  resetBlogSkin,
+  BlogSkin,
+  BlogSkinApplication,
+  SkinCssVariables,
+  LayoutConfig,
+} from '@/lib/api/skins'
 import type { User } from '@supabase/supabase-js'
 import Toast from '@/components/common/Toast'
+import SkinCard from '@/components/skin/SkinCard'
+import ColorPicker from '@/components/skin/ColorPicker'
+import FontSelector from '@/components/skin/FontSelector'
+import LayoutPicker from '@/components/skin/LayoutPicker'
 
 interface Blog {
   id: string
@@ -30,7 +45,7 @@ interface PostItem {
   created_at: string
 }
 
-type TabType = 'profile' | 'categories' | 'posts'
+type TabType = 'profile' | 'categories' | 'posts' | 'skin'
 
 const menuItems: { id: TabType; label: string; icon: React.ReactNode }[] = [
   {
@@ -57,6 +72,15 @@ const menuItems: { id: TabType; label: string; icon: React.ReactNode }[] = [
     icon: (
       <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'skin',
+    label: '스킨',
+    icon: (
+      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
       </svg>
     ),
   },
@@ -100,6 +124,19 @@ export default function BlogSettingsPage() {
   // 카테고리 추가 상태
   const [newCategory, setNewCategory] = useState('')
   const [addingCategory, setAddingCategory] = useState(false)
+
+  // 스킨 상태
+  const [systemSkins, setSystemSkins] = useState<BlogSkin[]>([])
+  const [skinApplication, setSkinApplication] = useState<BlogSkinApplication | null>(null)
+  const [selectedSkinId, setSelectedSkinId] = useState<string | null>(null)
+  const [customCssVariables, setCustomCssVariables] = useState<Partial<SkinCssVariables>>({})
+  const [customLayoutConfig, setCustomLayoutConfig] = useState<LayoutConfig>({
+    layout: 'sidebar-right',
+    postListStyle: 'cards',
+    showThumbnails: true,
+  })
+  const [skinSaving, setSkinSaving] = useState(false)
+  const [showCustomizer, setShowCustomizer] = useState(false)
 
   // 카카오 프로필 이미지
   const kakaoProfileImage = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null
@@ -163,6 +200,27 @@ export default function BlogSettingsPage() {
         })))
       } catch (err) {
         console.error('Failed to load posts:', err)
+      }
+
+      // 스킨 데이터 로드
+      try {
+        const [skinsData, skinAppData] = await Promise.all([
+          getSystemSkins(),
+          getBlogSkin(blogId),
+        ])
+        setSystemSkins(skinsData)
+        setSkinApplication(skinAppData)
+        if (skinAppData) {
+          setSelectedSkinId(skinAppData.skin_id)
+          if (skinAppData.custom_css_variables) {
+            setCustomCssVariables(skinAppData.custom_css_variables)
+          }
+          if (skinAppData.custom_layout_config) {
+            setCustomLayoutConfig(prev => ({ ...prev, ...skinAppData.custom_layout_config }))
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load skins:', err)
       }
 
       setLoading(false)
@@ -315,6 +373,73 @@ export default function BlogSettingsPage() {
       day: 'numeric',
     })
   }
+
+  // 스킨 선택 핸들러
+  const handleSelectSkin = async (skinId: string) => {
+    setSkinSaving(true)
+    try {
+      await applySkin(blogId, skinId)
+      setSelectedSkinId(skinId)
+      setCustomCssVariables({})
+      setCustomLayoutConfig({
+        layout: 'sidebar-right',
+        postListStyle: 'cards',
+        showThumbnails: true,
+      })
+      showToast('스킨이 적용되었습니다', 'success')
+    } catch (err) {
+      showToast('스킨 적용에 실패했습니다', 'error')
+    } finally {
+      setSkinSaving(false)
+    }
+  }
+
+  // 스킨 커스터마이징 저장
+  const handleSaveSkinCustomization = async () => {
+    setSkinSaving(true)
+    try {
+      await saveSkinCustomization(blogId, {
+        custom_css_variables: customCssVariables,
+        custom_layout_config: customLayoutConfig,
+      })
+      showToast('커스터마이징이 저장되었습니다', 'success')
+    } catch (err) {
+      showToast('저장에 실패했습니다', 'error')
+    } finally {
+      setSkinSaving(false)
+    }
+  }
+
+  // 스킨 초기화
+  const handleResetSkin = async () => {
+    if (!confirm('스킨 설정을 초기화하시겠습니까?')) return
+
+    setSkinSaving(true)
+    try {
+      await resetBlogSkin(blogId)
+      setSelectedSkinId(null)
+      setSkinApplication(null)
+      setCustomCssVariables({})
+      setCustomLayoutConfig({
+        layout: 'sidebar-right',
+        postListStyle: 'cards',
+        showThumbnails: true,
+      })
+      showToast('스킨이 초기화되었습니다', 'success')
+    } catch (err) {
+      showToast('초기화에 실패했습니다', 'error')
+    } finally {
+      setSkinSaving(false)
+    }
+  }
+
+  // CSS 변수 업데이트 핸들러
+  const handleCssVariableChange = (key: keyof SkinCssVariables, value: string) => {
+    setCustomCssVariables(prev => ({ ...prev, [key]: value }))
+  }
+
+  // 현재 선택된 스킨
+  const currentSkin = systemSkins.find(s => s.id === selectedSkinId)
 
   if (loading) {
     return (
@@ -623,6 +748,166 @@ export default function BlogSettingsPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* 스킨 */}
+        {activeTab === 'skin' && (
+          <div className="animate-[slideIn_0.2s_ease-out]">
+            <h1 className="text-2xl font-bold text-black dark:text-white">스킨</h1>
+            <p className="mt-1 text-black/50 dark:text-white/50">블로그 스킨을 선택하고 커스터마이징합니다</p>
+
+            <div className="mt-10">
+              {/* 현재 스킨 정보 */}
+              {currentSkin && (
+                <div className="mb-8 rounded-xl border border-black/10 bg-black/5 p-4 dark:border-white/10 dark:bg-white/5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-black/50 dark:text-white/50">현재 적용된 스킨</p>
+                      <p className="mt-1 font-medium text-black dark:text-white">{currentSkin.name}</p>
+                    </div>
+                    <button
+                      onClick={handleResetSkin}
+                      disabled={skinSaving}
+                      className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                    >
+                      초기화
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 스킨 선택 그리드 */}
+              <div>
+                <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">스킨 선택</h2>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {systemSkins.map((skin) => (
+                    <SkinCard
+                      key={skin.id}
+                      skin={skin}
+                      selected={selectedSkinId === skin.id}
+                      onSelect={() => handleSelectSkin(skin.id)}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              {/* 커스터마이징 토글 */}
+              <div className="mt-10">
+                <button
+                  onClick={() => setShowCustomizer(!showCustomizer)}
+                  className="flex items-center gap-2 text-sm font-medium text-black/70 hover:text-black dark:text-white/70 dark:hover:text-white"
+                >
+                  <svg
+                    className={`h-4 w-4 transition-transform ${showCustomizer ? 'rotate-90' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  커스터마이징
+                </button>
+
+                {showCustomizer && (
+                  <div className="mt-6 space-y-8 rounded-xl border border-black/10 p-6 dark:border-white/10">
+                    {/* 색상 설정 */}
+                    <div>
+                      <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">색상</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <ColorPicker
+                          label="배경색"
+                          value={customCssVariables['--blog-bg'] || currentSkin?.css_variables['--blog-bg'] || '#ffffff'}
+                          onChange={(v) => handleCssVariableChange('--blog-bg', v)}
+                        />
+                        <ColorPicker
+                          label="텍스트색"
+                          value={customCssVariables['--blog-fg'] || currentSkin?.css_variables['--blog-fg'] || '#000000'}
+                          onChange={(v) => handleCssVariableChange('--blog-fg', v)}
+                        />
+                        <ColorPicker
+                          label="강조색"
+                          value={customCssVariables['--blog-accent'] || currentSkin?.css_variables['--blog-accent'] || '#000000'}
+                          onChange={(v) => handleCssVariableChange('--blog-accent', v)}
+                        />
+                        <ColorPicker
+                          label="보조 텍스트"
+                          value={customCssVariables['--blog-muted'] || currentSkin?.css_variables['--blog-muted'] || 'rgba(0,0,0,0.6)'}
+                          onChange={(v) => handleCssVariableChange('--blog-muted', v)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 다크모드 색상 */}
+                    <div>
+                      <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">다크모드 색상</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <ColorPicker
+                          label="배경색 (다크)"
+                          value={customCssVariables['--blog-dark-bg'] || currentSkin?.css_variables['--blog-dark-bg'] || '#000000'}
+                          onChange={(v) => handleCssVariableChange('--blog-dark-bg', v)}
+                        />
+                        <ColorPicker
+                          label="텍스트색 (다크)"
+                          value={customCssVariables['--blog-dark-fg'] || currentSkin?.css_variables['--blog-dark-fg'] || '#ffffff'}
+                          onChange={(v) => handleCssVariableChange('--blog-dark-fg', v)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 폰트 설정 */}
+                    <div>
+                      <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">폰트</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FontSelector
+                          label="본문 폰트"
+                          value={customCssVariables['--blog-font-sans'] || currentSkin?.css_variables['--blog-font-sans'] || 'GMarketSans, sans-serif'}
+                          onChange={(v) => handleCssVariableChange('--blog-font-sans', v)}
+                        />
+                        <FontSelector
+                          label="코드 폰트"
+                          value={customCssVariables['--blog-font-mono'] || currentSkin?.css_variables['--blog-font-mono'] || 'monospace'}
+                          onChange={(v) => handleCssVariableChange('--blog-font-mono', v)}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 레이아웃 설정 */}
+                    <div>
+                      <h3 className="mb-4 text-sm font-semibold text-black dark:text-white">레이아웃</h3>
+                      <LayoutPicker
+                        value={customLayoutConfig}
+                        onChange={setCustomLayoutConfig}
+                      />
+                    </div>
+
+                    {/* 저장 버튼 */}
+                    <div className="flex gap-3 pt-4">
+                      <button
+                        onClick={handleSaveSkinCustomization}
+                        disabled={skinSaving}
+                        className="rounded-lg bg-black px-6 py-2.5 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-black"
+                      >
+                        {skinSaving ? '저장 중...' : '저장'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCustomCssVariables({})
+                          setCustomLayoutConfig({
+                            layout: 'sidebar-right',
+                            postListStyle: 'cards',
+                            showThumbnails: true,
+                          })
+                        }}
+                        className="rounded-lg border border-black/10 px-6 py-2.5 text-sm font-medium text-black hover:bg-black/5 dark:border-white/10 dark:text-white dark:hover:bg-white/5"
+                      >
+                        커스터마이징 초기화
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

@@ -2,24 +2,21 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import type { User } from '@supabase/supabase-js'
+import { useUserStore } from '@/lib/store/useUserStore'
 import ProfileImage from '@/components/common/ProfileImage'
 
-interface UserMenuProps {
-  user: User
-}
-
-export default function UserMenu({ user }: UserMenuProps) {
+export default function UserMenu() {
+  const { user } = useUserStore()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
-  const nickname = user.user_metadata?.name ||
-                   user.user_metadata?.nickname ||
-                   user.user_metadata?.full_name ||
-                   '사용자'
-  const profileImage = user.user_metadata?.avatar_url ||
-                       user.user_metadata?.picture
-  const email = user.email || user.user_metadata?.email || ''
+  const nickname = user?.user_metadata?.name ||
+    user?.user_metadata?.nickname ||
+    user?.user_metadata?.full_name ||
+    '사용자'
+  const profileImage = user?.user_metadata?.avatar_url ||
+    user?.user_metadata?.picture
+  const email = user?.email || user?.user_metadata?.email || ''
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -37,6 +34,8 @@ export default function UserMenu({ user }: UserMenuProps) {
     await supabase.auth.signOut()
     window.location.reload()
   }
+
+  if (!user) return null
 
   return (
     <div className="relative" ref={menuRef}>

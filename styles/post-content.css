@@ -1,16 +1,14 @@
 /*
  * 게시글 컨텐츠 공통 스타일
  * 글쓰기 에디터와 게시글 상세 페이지에서 공유
+ * 블로그 스킨 CSS 변수 기반 - 시스템 다크 모드와 독립적
  */
 
 .post-content {
     font-size: 1.125rem;
     line-height: 1.75;
-    color: #1a1a1a;
-}
-
-.dark .post-content {
-    color: #e5e5e5;
+    color: var(--blog-fg, #1a1a1a);
+    font-family: var(--blog-font-sans, 'GMarketSans', sans-serif);
 }
 
 /* 제목 스타일 */
@@ -18,33 +16,21 @@
     font-size: 2rem;
     font-weight: 700;
     margin: 2rem 0 1rem;
-    color: #000;
-}
-
-.dark .post-content h1 {
-    color: #fff;
+    color: var(--blog-fg, #000);
 }
 
 .post-content h2 {
     font-size: 1.5rem;
     font-weight: 700;
     margin: 1.75rem 0 0.75rem;
-    color: #000;
-}
-
-.dark .post-content h2 {
-    color: #fff;
+    color: var(--blog-fg, #000);
 }
 
 .post-content h3 {
     font-size: 1.25rem;
     font-weight: 600;
     margin: 1.5rem 0 0.5rem;
-    color: #000;
-}
-
-.dark .post-content h3 {
-    color: #fff;
+    color: var(--blog-fg, #000);
 }
 
 /* 본문 스타일 */
@@ -75,36 +61,26 @@
 
 /* 인용구 스타일 */
 .post-content blockquote {
-    border-left: 4px solid rgba(0, 0, 0, 0.2);
+    border-left: 4px solid var(--blog-border, rgba(0, 0, 0, 0.2));
     padding-left: 1.25rem;
     margin: 1.5rem 0;
-    color: rgba(0, 0, 0, 0.7);
+    color: var(--blog-muted, rgba(0, 0, 0, 0.7));
     font-style: italic;
-}
-
-.dark .post-content blockquote {
-    border-left-color: rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.7);
 }
 
 /* 코드 블록 스타일 */
 .post-content pre {
-    background: #f6f8fa;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
+    background: var(--blog-card-bg, #f6f8fa);
+    border: 1px solid var(--blog-border, rgba(0, 0, 0, 0.1));
+    border-radius: var(--blog-border-radius, 0.5rem);
     padding: 1rem;
     margin: 1.5rem 0;
     overflow-x: auto;
 }
 
-.dark .post-content pre {
-    background: #1a1a1a;
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
 .post-content pre code,
 .post-content pre code.hljs {
-    font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-family: var(--blog-font-mono, 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
     font-size: 0.875rem;
     line-height: 1.7;
     display: block;
@@ -116,15 +92,11 @@
 .post-content code:not(pre code) {
     font-family: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 0.875rem;
-    background: rgba(0, 0, 0, 0.06);
+    background: var(--blog-fg, rgba(0, 0, 0, 0.06));
+    background: color-mix(in srgb, var(--blog-fg, #000) 6%, transparent);
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
     color: #e83e8c;
-}
-
-.dark .post-content code:not(pre code) {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f472b6;
 }
 
 /* 이미지 스타일 */
@@ -137,24 +109,20 @@
 
 /* 링크 스타일 */
 .post-content a {
-    color: #3b82f6;
+    color: var(--blog-accent, #3b82f6);
     text-decoration: underline;
     text-underline-offset: 2px;
 }
 
 .post-content a:hover {
-    color: #2563eb;
+    opacity: 0.8;
 }
 
 /* 수평선 */
 .post-content hr {
     border: none;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-top: 1px solid var(--blog-border, rgba(0, 0, 0, 0.1));
     margin: 2rem 0;
-}
-
-.dark .post-content hr {
-    border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 /* 테이블 */
@@ -166,33 +134,20 @@
 
 .post-content th,
 .post-content td {
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--blog-border, rgba(0, 0, 0, 0.1));
     padding: 0.75rem;
     text-align: left;
 }
 
-.dark .post-content th,
-.dark .post-content td {
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
 .post-content th {
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--blog-card-bg, rgba(0, 0, 0, 0.03));
     font-weight: 600;
-}
-
-.dark .post-content th {
-    background: rgba(255, 255, 255, 0.05);
 }
 
 /* 강조 */
 .post-content strong {
     font-weight: 600;
-    color: #000;
-}
-
-.dark .post-content strong {
-    color: #fff;
+    color: var(--blog-fg, #000);
 }
 
 .post-content em {
