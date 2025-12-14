@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getAvailableSkins, applySkin, getBlogSkin, BlogSkin } from '@/lib/api/skins'
 import { getBlogPosts, Post } from '@/lib/api/posts'
+import Header from '@/components/common/Header'
 import Toast from '@/components/common/Toast'
 import PreviewBlogLayout from '@/components/skin/PreviewBlogLayout'
 import PreviewSidebar from '@/components/skin/PreviewSidebar'
@@ -86,10 +87,18 @@ export default function SkinsPage() {
           .from('profiles')
           .select('id, nickname, profile_image_url')
           .eq('id', user.id)
-          .single()
+          .maybeSingle()
 
         if (profileData) {
           setProfile(profileData)
+        } else {
+          // 프로필이 없으면 user metadata에서 카카오 프로필 사용
+          const kakaoProfile = user.user_metadata?.avatar_url || user.user_metadata?.picture
+          setProfile({
+            id: user.id,
+            nickname: user.user_metadata?.name || user.user_metadata?.full_name || null,
+            profile_image_url: kakaoProfile || null,
+          })
         }
       }
 
@@ -149,31 +158,7 @@ export default function SkinsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-zinc-100 dark:bg-zinc-950">
-      {/* 헤더 */}
-      <header className="shrink-0 border-b border-black/10 bg-white dark:border-white/10 dark:bg-black">
-        <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4">
-          <a href="/" className="text-lg font-bold text-black dark:text-white">
-            Snuggle
-          </a>
-          <nav className="flex items-center gap-4">
-            <a
-              href="/"
-              className="text-sm text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
-            >
-              홈
-            </a>
-            <span className="text-sm font-medium text-black dark:text-white">
-              내 스킨
-            </span>
-            <a
-              href="/marketplace"
-              className="text-sm text-black/60 hover:text-black dark:text-white/60 dark:hover:text-white"
-            >
-              마켓플레이스
-            </a>
-          </nav>
-        </div>
-      </header>
+      <Header />
 
       {/* 메인 - Split View */}
       <div className="flex flex-1 overflow-hidden">

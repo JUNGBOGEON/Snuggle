@@ -70,7 +70,7 @@ export default function NewBloggers() {
                   onError={() => handleImageError(blog.id)}
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/10 text-sm font-medium text-black/50 dark:bg-white/10 dark:text-white/50">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 text-sm font-bold text-white">
                   {blog.name.charAt(0)}
                 </div>
               )}

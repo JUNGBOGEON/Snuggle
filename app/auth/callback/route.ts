@@ -33,7 +33,6 @@ export async function GET(request: Request) {
             nickname: nickname,
           }, {
             onConflict: 'id',
-            ignoreDuplicates: false,
           })
       }
     }

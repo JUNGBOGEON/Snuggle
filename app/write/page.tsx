@@ -383,6 +383,52 @@ function WriteContent() {
         localStorage.removeItem(DRAFT_STORAGE_KEY)
     }, [])
 
+    // 사용자 및 블로그 정보 가져오기
+    useEffect(() => {
+        const fetchData = async () => {
+            const supabase = createClient()
+
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user) {
+                router.push('/')
+                return
+            }
+
+            setUser(user)
+
+            // 블로그 정보 가져오기 (다중 블로그 지원)
+            const { data: blogList } = await supabase
+                .from('blogs')
+                .select('id, name')
+                .eq('user_id', user.id)
+                .is('deleted_at', null)
+                .order('created_at', { ascending: true })
+
+            if (!blogList || blogList.length === 0) {
+                router.push('/create-blog')
+                return
+            }
+
+            // 활성 블로그 또는 첫 번째 블로그 사용
+            const savedBlogId = typeof window !== 'undefined' ? localStorage.getItem('activeBlogId') : null
+            const activeBlog = blogList.find(b => b.id === savedBlogId) || blogList[0]
+            setBlog(activeBlog)
+
+            // 카테고리 정보 가져오기 (백엔드 API 사용)
+            try {
+                const categoryData = await getCategories(activeBlog.id)
+                setCategories(categoryData.map(c => ({ id: c.id, name: c.name })))
+            } catch (err) {
+                console.error('Failed to load categories:', err)
+            }
+
+            setLoading(false)
+        }
+
+        fetchData()
+    }, [router])
+
     // 새 카테고리 추가
     const handleAddCategory = async (name: string): Promise<Category | null> => {
         if (!blog) return null
