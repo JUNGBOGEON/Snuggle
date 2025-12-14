@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { uploadImage } from '@/lib/api/upload'
+import { getSystemSkins, applySkin } from '@/lib/api/skins'
 import type { User } from '@supabase/supabase-js'
 
 export default function CreateBlogPage() {
@@ -108,7 +109,7 @@ export default function CreateBlogPage() {
 
       const supabase = createClient()
 
-      const { error: insertError } = await supabase
+      const { data: blogData, error: insertError } = await supabase
         .from('blogs')
         .insert({
           user_id: user.id,
@@ -116,11 +117,24 @@ export default function CreateBlogPage() {
           description: description.trim() || null,
           thumbnail_url: thumbnailUrl,
         })
+        .select('id')
+        .single()
 
-      if (insertError) {
+      if (insertError || !blogData) {
         setError('블로그 생성에 실패했습니다')
         setLoading(false)
         return
+      }
+
+      // 기본 스킨 자동 적용
+      try {
+        const skins = await getSystemSkins()
+        const defaultSkin = skins.find(skin => skin.name === '기본')
+        if (defaultSkin) {
+          await applySkin(blogData.id, defaultSkin.id)
+        }
+      } catch (skinError) {
+        console.error('Failed to apply default skin:', skinError)
       }
 
       router.push('/')

@@ -8,6 +8,9 @@ import UserMenu from '@/components/auth/UserMenu'
 import PostList from '@/components/blog/PostList'
 import MyBlogSidebar from '@/components/blog/MyBlogSidebar'
 import NewBloggers from '@/components/blog/NewBloggers'
+import SearchInputWithSuggestions from '@/components/search/SearchInputWithSuggestions'
+import { syncProfile } from '@/lib/api/profile'
+import type { User } from '@supabase/supabase-js'
 
 const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
   ssr: false,
@@ -39,7 +42,7 @@ export default function Home() {
           {/* Navigation */}
           <nav className="flex items-center gap-8">
             <a
-              href="#"
+              href="/"
               className="text-sm font-medium text-black dark:text-white"
             >
               홈
@@ -51,7 +54,7 @@ export default function Home() {
               피드
             </a>
             <a
-              href="#"
+              href="/skins"
               className="text-sm font-medium text-black/60 dark:text-white/60"
             >
               스킨
@@ -60,11 +63,7 @@ export default function Home() {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
-            <input
-              type="text"
-              placeholder="검색"
-              className="h-9 w-48 rounded-full border border-black/10 bg-transparent px-4 text-sm text-black placeholder-black/40 outline-none dark:border-white/10 dark:text-white dark:placeholder-white/40"
-            />
+            <SearchInputWithSuggestions />
             <ThemeToggle />
             {user ? (
               <UserMenu />
