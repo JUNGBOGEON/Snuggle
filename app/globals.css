@@ -51,6 +51,14 @@
   --blog-dark-muted: rgba(255, 255, 255, 0.6);
   --blog-dark-border: rgba(255, 255, 255, 0.1);
   --blog-dark-card-bg: #18181b;
+
+  /* 블로그 스킨 다크모드 매핑 (로딩 시 깜빡임 방지) */
+  --blog-bg: var(--blog-dark-bg);
+  --blog-fg: var(--blog-dark-fg);
+  --blog-accent: var(--blog-dark-accent);
+  --blog-muted: var(--blog-dark-muted);
+  --blog-border: var(--blog-dark-border);
+  --blog-card-bg: var(--blog-dark-card-bg);
 }
 
 /*
