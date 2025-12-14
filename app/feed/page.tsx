@@ -60,16 +60,7 @@ export default function FeedPage() {
 
     return (
         <div className="min-h-screen bg-white dark:bg-black">
-            {/* Header */}
-            <header className="relative z-40 border-b border-black/10 bg-white dark:border-white/10 dark:bg-black">
-                <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
-                    <div className="relative flex items-center">
-                        <a href="/" className="text-xl font-bold text-black dark:text-white">
-                            Snuggle
-                        </a>
-                    </div>
-                </div>
-            </header>
+
 
             <main className="mx-auto max-w-4xl px-6 py-10">
                 <FeedHeader

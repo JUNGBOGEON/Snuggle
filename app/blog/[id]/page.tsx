@@ -36,22 +36,17 @@ function BlogContent({ blog, profile, postCount, isOwner }: BlogContentProps) {
 
   return (
     <div className="min-h-screen bg-[var(--blog-bg)]" style={{ color: 'var(--blog-fg)' }}>
-      {/* 헤더 */}
-      <header className="border-b border-[var(--blog-border)]">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <a href="/" className="text-lg font-bold text-[var(--blog-fg)]">
-            Snuggle
+      {/* 헤더 대체 (작성 버튼만 표시) */}
+      {isOwner && (
+        <div className="mx-auto flex max-w-6xl justify-end px-6 py-4">
+          <a
+            href="/write"
+            className="rounded-full bg-[var(--blog-accent)] px-4 py-2 text-sm font-medium text-[var(--blog-bg)] hover:opacity-90"
+          >
+            새 글 작성
           </a>
-          {isOwner && (
-            <a
-              href="/write"
-              className="rounded-full bg-[var(--blog-accent)] px-4 py-2 text-sm font-medium text-[var(--blog-bg)]"
-            >
-              새 글 작성
-            </a>
-          )}
         </div>
-      </header>
+      )}
 
       {/* 메인 컨텐츠 */}
       <main className="mx-auto max-w-6xl px-6 py-10">

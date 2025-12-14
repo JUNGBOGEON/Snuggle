@@ -199,68 +199,24 @@ export async function deletePost(id: string): Promise<void> {
 }
 
 // 내가 구독한 블로그의 게시글 (피드)
-export async function getFeedPosts(userId: string, limit = 14): Promise<PostListItem[]> {
-  const supabase = createClient()
+export async function getFeedPosts(limit = 14): Promise<PostListItem[]> {
+  const token = await getAuthToken()
 
-  // 1. 내가 구독한 사람들의 ID (subed_id) 가져오기
-  const { data: subscribed, error: subError } = await supabase
-    .from('subscribe')
-    .select('subed_id')
-    .eq('sub_id', userId)
-
-  if (subError) {
-    console.error('Failed to fetch subscriptions for feed:', subError)
-    throw new Error('Failed to fetch feed')
-  }
-
-  // 구독한 사람이 없으면 빈 배열 반환
-  if (!subscribed || subscribed.length === 0) {
+  if (!token) {
     return []
   }
 
-  const subscribedUserIds = subscribed.map((row) => row.subed_id)
+  const response = await fetch(`${API_URL}/api/posts/feed?limit=${limit}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
 
-  // 2. 해당 유저들의 블로그 ID 가져오기
-  // posts 테이블에는 blog_id만 있고 user_id가 있긴 하지만, 블로그 정보도 같이 조인해야 함
-  // user_id로 직접 쿼리 가능
-
-  const { data: posts, error: postError } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      title,
-      content,
-      thumbnail_url,
-      created_at,
-      blog_id,
-      blog:blogs (
-        name,
-        thumbnail_url,
-        user_id
-        ),
-      user_id
-    `)
-    .in('user_id', subscribedUserIds)  // 구독한 유저들의 글만 필터링
-    .order('created_at', { ascending: false })
-    .limit(limit)
-
-  if (postError) {
-    console.error('Failed to fetch feed posts:', postError)
-    throw new Error('Failed to fetch feed posts')
+  if (!response.ok) {
+    throw new Error('Failed to fetch feed')
   }
 
-  // 타입 변환 (user_id 검증 로직은 쿼리에서 처리했으므로 생략 가능하나 안전을 위해)
-  return posts.map((post: any) => ({
-    id: post.id,
-    title: post.title,
-    content: post.content,
-    thumbnail_url: post.thumbnail_url,
-    created_at: post.created_at,
-    blog_id: post.blog_id,
-    blog: post.blog ? {
-      name: post.blog.name || '',
-      thumbnail_url: post.blog.thumbnail_url || null,
-    } : null,
-    // 필요하다면 user_id 등 추가 정보 포함 가능
-  }))
+  return response.json()
 }
+
+

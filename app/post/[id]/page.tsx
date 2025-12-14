@@ -9,6 +9,7 @@ import AccessDenied from '@/components/common/AccessDenied'
 import PostActionMenu from '@/components/post/PostActionMenu'
 import { useUserStore } from '@/lib/store/useUserStore'
 import { deletePost, updatePost } from '@/lib/api/posts'
+import SubscriptionCard from '@/components/post/SubscriptionCard'
 
 // 게시글 컨텐츠 스타일
 import '@/styles/post-content.css'
@@ -126,14 +127,7 @@ export default function PostPage() {
     return (
         <BlogSkinProvider blogId={postData.blog.id}>
             <div className="min-h-screen bg-[var(--blog-bg)]" style={{ fontFamily: 'var(--blog-font-sans, GMarketSans, sans-serif)', color: 'var(--blog-fg)' }}>
-                {/* 헤더 */}
-                <header className="border-b border-[var(--blog-border)]">
-                    <div className="mx-auto flex h-16 max-w-4xl items-center justify-between px-6">
-                        <a href="/" className="text-lg font-bold text-[var(--blog-fg)]">
-                            Snuggle
-                        </a>
-                    </div>
-                </header>
+
 
                 {/* 메인 컨텐츠 */}
                 <main className="mx-auto max-w-3xl px-6 py-12">
@@ -199,11 +193,23 @@ export default function PostPage() {
                         />
                     </div>
 
+
+
                     {/* 본문 */}
                     <article
                         ref={contentRef}
                         className="post-content mt-10 max-w-none"
                         dangerouslySetInnerHTML={{ __html: postData.content }}
+                    />
+
+                    {/* 구독 카드 */}
+                    <SubscriptionCard
+                        blogId={postData.blog.id}
+                        blogName={postData.blog.name}
+                        blogDescription={(postData.blog as any).description || null}
+                        authorId={postData.user_id}
+                        thumbnailUrl={postData.blog.thumbnail_url}
+                        profileImageUrl={postData.profile?.profile_image_url || null}
                     />
 
                     {/* 하단 네비게이션 */}

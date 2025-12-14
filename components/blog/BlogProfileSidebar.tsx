@@ -2,6 +2,8 @@
 
 import ProfileImage from '@/components/common/ProfileImage'
 
+import SubscriptionButton from '@/components/common/SubscriptionButton'
+
 interface Blog {
   id: string
   user_id: string
@@ -53,6 +55,10 @@ export default function BlogProfileSidebar({
           <h1 className="mt-4 text-xl font-bold text-[var(--blog-fg)]">
             {blog.name}
           </h1>
+
+          <div className="mt-2 text-center">
+            <SubscriptionButton targetId={blog.user_id} className="text-xs px-3 py-1.5" variant="blog" />
+          </div>
 
           {blog.description && (
             <p className="mt-3 text-center text-sm text-[var(--blog-muted)]">

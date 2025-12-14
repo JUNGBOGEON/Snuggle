@@ -1,6 +1,50 @@
 import { createClient } from '@/lib/supabase/client'
 
-// 구독 정보 타입
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
+async function getAuthToken(): Promise<string | null> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token || null
+}
+
+// 구독 여부 확인
+export async function checkSubscription(targetId: string): Promise<boolean> {
+  const token = await getAuthToken()
+  if (!token) return false
+
+  const response = await fetch(`${API_URL}/api/subscribe/check?targetId=${targetId}`, {
+    cache: 'no-store',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+
+  if (!response.ok) return false
+  const data = await response.json()
+  return data.subscribed
+}
+
+// 구독 토글
+export async function toggleSubscription(targetId: string): Promise<{ subscribed: boolean }> {
+  const token = await getAuthToken()
+  if (!token) throw new Error('로그인이 필요합니다')
+
+  const response = await fetch(`${API_URL}/api/subscribe`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ targetId })
+  })
+
+  if (!response.ok) {
+    throw new Error('구독 처리에 실패했습니다')
+  }
+
+  return response.json()
+}
 export interface Subscription {
   sub_id: string // 구독하는 사람 (나)
   subed_id: string // 구독 당하는 사람 (상대방)
