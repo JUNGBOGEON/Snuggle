@@ -16,6 +16,7 @@ export interface Post {
   content: string
   category_id: string | null
   published: boolean
+  is_private?: boolean // 추가
   thumbnail_url: string | null
   created_at: string
   updated_at: string
@@ -145,6 +146,7 @@ export async function updatePost(
     content?: string
     category_ids?: string[]
     published?: boolean
+    is_private?: boolean // 추가
   }
 ): Promise<Post> {
   const token = await getAuthToken()
