@@ -26,8 +26,6 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-
-  /* 블로그 스킨 기본값 */
   --blog-bg: #ffffff;
   --blog-fg: #000000;
   --blog-accent: #000000;
