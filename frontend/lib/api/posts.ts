@@ -299,8 +299,6 @@ export async function toggleLike(postId: string): Promise<{ success: boolean; is
   }
 
 
-
-
   return response.json()
 }
 
