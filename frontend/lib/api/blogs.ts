@@ -68,28 +68,36 @@ export async function getNewBlogs(limit = 3): Promise<BlogItem[]> {
   }))
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
+
+async function getAuthToken(): Promise<string | null> {
+  const supabase = createClient()
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token || null
+}
+
+// ... (interfaces)
+
 // 내 블로그 목록 조회
 export async function getMyBlogs(): Promise<MyBlog[]> {
-  const supabase = createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const token = await getAuthToken()
 
-  if (!user) {
+  if (!token) {
     throw new Error('Not authenticated')
   }
 
-  const { data, error } = await supabase
-    .from('blogs')
-    .select('id, name, description, thumbnail_url, created_at, updated_at')
-    .eq('user_id', user.id)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: true })
+  const response = await fetch(`${API_URL}/api/blogs/my`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
 
-  if (error) {
-    console.error('Failed to fetch my blogs:', error)
+  if (!response.ok) {
+    console.error('Failed to fetch my blogs')
     throw new Error('Failed to fetch my blogs')
   }
 
-  return data || []
+  return response.json()
 }
 
 // 삭제된 블로그 목록 조회

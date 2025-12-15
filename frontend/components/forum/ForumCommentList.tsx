@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ForumComment, createForumComment, getForumComments } from '@/lib/api/forum'
+import { getMyBlogs } from '@/lib/api/blogs'
 import ProfileImage from '@/components/common/ProfileImage'
 import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -32,13 +33,8 @@ export default function ForumCommentList({ forumId }: ForumCommentListProps) {
 
                 // 2. Load My Blog ID if logged in
                 if (user) {
-                    const supabase = createClient()
-                    const { data: blog } = await supabase
-                        .from('blogs')
-                        .select('id')
-                        .eq('user_id', user.id)
-                        .single()
-                    if (blog) setMyBlogId(blog.id)
+                    const blogs = await getMyBlogs()
+                    if (blogs.length > 0) setMyBlogId(blogs[0].id)
                 }
             } catch (error) {
                 console.error(error)

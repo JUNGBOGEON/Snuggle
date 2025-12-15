@@ -44,6 +44,9 @@ export interface PostWithDetails extends Post {
     nickname: string | null
     profile_image_url: string | null
   } | null
+  prev_post?: { id: string; title: string } | null
+  next_post?: { id: string; title: string } | null
+  is_liked?: boolean
 }
 
 export interface PostListItem {
@@ -94,7 +97,7 @@ export async function getBlogPosts(blogId: string, showAll = false): Promise<Pos
 }
 
 // 게시글 상세 조회
-export async function getPost(id: string): Promise<PostWithDetails | null> {
+export async function getPost(id: string, selectedBlogId?: string): Promise<PostWithDetails | null> {
   const token = await getAuthToken()
   const headers: Record<string, string> = {}
 
@@ -102,7 +105,11 @@ export async function getPost(id: string): Promise<PostWithDetails | null> {
     headers.Authorization = `Bearer ${token}`
   }
 
-  const response = await fetch(`${API_URL}/api/posts/${id}`, { headers })
+  const url = selectedBlogId
+    ? `${API_URL}/api/posts/${id}?selectedBlogId=${selectedBlogId}`
+    : `${API_URL}/api/posts/${id}`
+
+  const response = await fetch(url, { headers })
   if (response.status === 403) {
     throw new Error('Private')
   }
@@ -243,14 +250,14 @@ export async function deletePost(id: string): Promise<void> {
 }
 
 // 내가 구독한 블로그의 게시글 (피드)
-export async function getFeedPosts(limit = 14): Promise<PostListItem[]> {
+export async function getFeedPosts(limit = 14, offset = 0): Promise<PostListItem[]> {
   const token = await getAuthToken()
 
   if (!token) {
     return []
   }
 
-  const response = await fetch(`${API_URL}/api/posts/feed?limit=${limit}`, {
+  const response = await fetch(`${API_URL}/api/posts/feed?limit=${limit}&offset=${offset}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -259,8 +266,37 @@ export async function getFeedPosts(limit = 14): Promise<PostListItem[]> {
   if (!response.ok) {
     throw new Error('Failed to fetch feed')
   }
+  return response.json()
+}
+
+// 오늘의 인기글
+export async function getPopularPosts(): Promise<PostListItem[]> {
+  const response = await fetch(`${API_URL}/api/posts/popular`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch popular posts')
+  }
+// 좋아요 토글
+export async function toggleLike(postId: string): Promise<{ success: boolean; is_liked: boolean; like_count: number }> {
+  const token = await getAuthToken()
+  if (!token) throw new Error('Not authenticated')
+
+  const response = await fetch(`${API_URL}/api/posts/${postId}/like`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    console.error('Like toggle failed:', errorData)
+    throw new Error(errorData.details || errorData.error || 'Failed to toggle like')
+  }
 
   return response.json()
 }
 
 
+  return response.json()
+}

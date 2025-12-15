@@ -5,6 +5,8 @@ import PostList from '@/components/blog/PostList'
 import MyBlogSidebar from '@/components/blog/MyBlogSidebar'
 import NewBloggers from '@/components/blog/NewBloggers'
 
+import PopularPostSlider from '@/components/home/PopularPostSlider'
+
 export default function Home() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false) // Still used by LoginModal if invoked? UserMenu/LoginModal logic moved to Header?
   // Actually, LoginModal in page.tsx was triggered by button in header. 
@@ -20,6 +22,7 @@ export default function Home() {
         <div className="flex gap-8">
           {/* 왼쪽: 블로그 글 목록 */}
           <div className="flex-1 min-w-0">
+            <PopularPostSlider />
             <h2 className="mb-4 text-lg font-semibold text-black dark:text-white">
               최신 글
             </h2>

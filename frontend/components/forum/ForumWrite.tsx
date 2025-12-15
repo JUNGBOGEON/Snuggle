@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react'
 import { createForum } from '@/lib/api/forum'
+import { getMyBlogs } from '@/lib/api/blogs'
 import { uploadTempImage } from '@/lib/api/upload'
 import { useUserStore } from '@/lib/store/useUserStore'
 import { createClient } from '@/lib/supabase/client'
@@ -45,12 +46,8 @@ export default function ForumWrite({ onPostSuccess }: ForumWriteProps) {
 
         setSubmitting(true)
         try {
-            const supabase = createClient()
-            const { data: blog } = await supabase
-                .from('blogs')
-                .select('id')
-                .eq('user_id', user.id)
-                .single()
+            const blogs = await getMyBlogs()
+            const blog = blogs[0]
 
             if (!blog) {
                 await showAlert('블로그를 먼저 개설해주세요.')

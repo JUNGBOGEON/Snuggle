@@ -10,9 +10,13 @@ import BlogHeader from '@/components/layout/BlogHeader'
 import AccessDenied from '@/components/common/AccessDenied'
 import PostActionMenu from '@/components/post/PostActionMenu'
 import { useUserStore } from '@/lib/store/useUserStore'
+import { useBlogStore } from '@/lib/store/useBlogStore'
 import { deletePost, updatePost } from '@/lib/api/posts'
 import { useModal } from '@/components/common/Modal'
 import SubscriptionCard from '@/components/post/SubscriptionCard'
+import PostActionToolbar from '@/components/post/PostActionToolbar'
+import SubscriptionButton from '@/components/common/SubscriptionButton'
+import RelatedPosts from '@/components/post/RelatedPosts'
 
 // 게시글 컨텐츠 스타일
 import '@/styles/post-content.css'
@@ -30,6 +34,7 @@ export default function PostPage() {
     const [notFound, setNotFound] = useState(false)
     const [isPrivateError, setIsPrivateError] = useState(false)
     const { user } = useUserStore()
+    const { selectedBlog } = useBlogStore()
     const { showAlert } = useModal()
 
     // 페이지 진입/변경 시 스크롤 최상단 이동
@@ -39,9 +44,15 @@ export default function PostPage() {
 
     useEffect(() => {
         const fetchData = async () => {
+            // 에러 상태 초기화
+            setIsPrivateError(false)
+            setNotFound(false)
+            setLoading(true)
+
             // 게시글 정보 (백엔드 API 사용)
+            // selectedBlog?.id를 전달하여 비공개 글 접근 권한 확인
             try {
-                const data = await getPost(postId)
+                const data = await getPost(postId, selectedBlog?.id)
                 if (!data) {
                     setNotFound(true)
                     setLoading(false)
@@ -60,7 +71,7 @@ export default function PostPage() {
         }
 
         fetchData()
-    }, [postId])
+    }, [postId, selectedBlog?.id])
 
     // 코드블록 하이라이팅 적용
     useEffect(() => {
@@ -155,8 +166,8 @@ export default function PostPage() {
         }
     }
 
-    // 작성자 확인
-    const isAuthor = user?.id === postData?.user_id
+    // 작성자 확인 - user_id 일치 + 현재 선택된 블로그가 해당 게시글의 블로그인지 확인
+    const isAuthor = user?.id === postData?.user_id && selectedBlog?.id === postData?.blog?.id
 
     return (
         <BlogSkinProvider blogId={postData.blog.id}>
@@ -234,6 +245,33 @@ export default function PostPage() {
                         className="post-content mt-10 max-w-none"
                         dangerouslySetInnerHTML={{ __html: postData.content }}
                     />
+
+                    {/* 구분선 */}
+                    <div className="my-12 h-px w-full bg-black/10 dark:bg-white/10" />
+
+                    {/* 액션 툴바 + 구독 버튼 */}
+                    <div className="flex items-center gap-3 mb-0">
+                        <PostActionToolbar
+                            postId={postData.id}
+                            initialIsLiked={postData.is_liked}
+                        />
+                        <SubscriptionButton
+                            targetId={postData.user_id}
+                            variant="blog"
+                            className="!px-4 !py-2 h-[42px]"
+                        />
+                    </div>
+
+                    {/* 관련 글 (이전/다음) */}
+                    <RelatedPosts
+                        categoryName={postData.blog.name}
+                        currentPost={postData}
+                        prevPost={postData.prev_post}
+                        nextPost={postData.next_post}
+                    />
+
+                    {/* 구분선 (하단 프로필 카드 위) - 이미 SubscriptionCard 내부에 테두리가 있으므로 상단 구분선 추가 */}
+                    <div className="my-12 h-px w-full bg-black/10 dark:bg-white/10" />
 
                     {/* 구독 카드 */}
                     <SubscriptionCard

@@ -1,6 +1,5 @@
 interface WriteHeaderProps {
     onBack: () => void
-    onSave: () => void
     onPublish: () => void
     saving: boolean
     isEdit?: boolean
@@ -8,7 +7,6 @@ interface WriteHeaderProps {
 
 export default function WriteHeader({
     onBack,
-    onSave,
     onPublish,
     saving,
     isEdit,
@@ -38,12 +36,6 @@ export default function WriteHeader({
 
                 {/* 오른쪽 버튼들 */}
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={onSave}
-                        className="rounded-lg px-4 py-2 text-sm font-medium text-black/60 hover:bg-black/5 dark:text-white/60 dark:hover:bg-white/5"
-                    >
-                        임시저장
-                    </button>
                     <button
                         onClick={onPublish}
                         disabled={saving}

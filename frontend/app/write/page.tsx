@@ -26,7 +26,7 @@ import '@/styles/highlight-theme.css'
 const lowlight = createLowlight(all)
 
 // localStorage 키
-const DRAFT_STORAGE_KEY = 'snuggle_draft'
+
 
 // temp 이미지 URL 패턴 (R2 public URL)
 const TEMP_IMAGE_PATTERN = /temp\/[^/]+\/[^"'\s]+/
@@ -62,13 +62,7 @@ interface Category {
     name: string
 }
 
-interface DraftData {
-    title: string
-    content: string
-    categoryIds: string[]
-    uploadedImages: string[]
-    lastSaved: number
-}
+
 
 function WriteContent() {
     const router = useRouter()
@@ -134,19 +128,7 @@ function WriteContent() {
                     return
                 }
             } else {
-                // 작성 모드: 로컬 스토리지 임시저장 자동 불러오기
-                try {
-                    const saved = localStorage.getItem(DRAFT_STORAGE_KEY)
-                    if (saved) {
-                        const draft: DraftData = JSON.parse(saved)
-                        setTitle(draft.title || '')
-                        setInitialContent(draft.content || '')
-                        setCategoryIds(draft.categoryIds || [])
-                        uploadedImagesRef.current = new Set(draft.uploadedImages || [])
-                    }
-                } catch (error) {
-                    console.error('Failed to load draft:', error)
-                }
+                // 작성 모드
             }
 
             setLoading(false)
@@ -359,8 +341,6 @@ function WriteContent() {
             },
         },
         onUpdate: ({ editor }) => {
-            // 수정 모드에서는 자동 저장(임시저장)을 하지 않거나, 별도 키로 저장할 수 있음. 
-            // 여기서는 작성 모드일 때만 로컬 스토리지 저장
             if (!isEditMode) {
                 // 현재 에디터의 이미지 URL 추출
                 const currentContent = editor.getHTML()
@@ -373,9 +353,6 @@ function WriteContent() {
                         uploadedImagesRef.current.delete(url)
                     }
                 })
-
-                // localStorage에 저장 (디바운스 효과를 위해 setTimeout 사용)
-                saveDraftDebounced(editor.getHTML())
             }
         },
     })
@@ -388,49 +365,7 @@ function WriteContent() {
         }
     }, [editor, initialContent])
 
-    // localStorage에 저장 (작성 모드용)
-    const saveDraft = useCallback((content: string) => {
-        if (typeof window === 'undefined' || isEditMode) return
 
-        const draft: DraftData = {
-            title,
-            content,
-            categoryIds,
-            uploadedImages: Array.from(uploadedImagesRef.current),
-            lastSaved: Date.now(),
-        }
-
-        try {
-            localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
-        } catch (error) {
-            console.error('Failed to save draft:', error)
-        }
-    }, [title, categoryIds, isEditMode])
-
-    // 디바운스된 저장 함수
-    const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-    const saveDraftDebounced = useCallback((content: string) => {
-        if (saveTimeoutRef.current) {
-            clearTimeout(saveTimeoutRef.current)
-        }
-
-        saveTimeoutRef.current = setTimeout(() => {
-            saveDraft(content)
-        }, 500)
-    }, [saveDraft])
-
-    // 제목/카테고리 변경 시 저장 (작성 모드만)
-    useEffect(() => {
-        if (editor && isInitializedRef.current && !isEditMode) {
-            saveDraftDebounced(editor.getHTML())
-        }
-    }, [title, categoryIds, editor, saveDraftDebounced, isEditMode])
-
-    // 초안 삭제
-    const clearDraft = useCallback(() => {
-        if (typeof window === 'undefined') return
-        localStorage.removeItem(DRAFT_STORAGE_KEY)
-    }, [])
 
     // 새 카테고리 추가
     const handleAddCategory = async (name: string): Promise<Category | null> => {
@@ -448,17 +383,7 @@ function WriteContent() {
         }
     }
 
-    // 임시저장 (작성 모드 전용)
-    const handleSave = async () => {
-        if (isEditMode) {
-            await showAlert('수정 모드에서는 임시저장을 지원하지 않습니다.')
-            return
-        }
-        if (editor) {
-            saveDraft(editor.getHTML())
-            await showAlert('임시저장되었습니다.')
-        }
-    }
+
 
     // 발행 서랍 상태
     const [isDrawerOpen, setIsDrawerOpen] = useState(false)
@@ -517,7 +442,7 @@ function WriteContent() {
                 })
 
                 // 발행 성공 시 초안 삭제
-                clearDraft()
+                // clearDraft() // Removed
             }
 
             // 블로그 홈 또는 해당 글 상세로 이동
@@ -549,7 +474,7 @@ function WriteContent() {
             {/* 상단 헤더 */}
             <WriteHeader
                 onBack={() => router.back()}
-                onSave={handleSave}
+                // onSave={handleSave} // Removed
                 onPublish={handlePublishClick} // 이전 handlePublish 대신 handlePublishClick 사용
                 saving={saving}
                 isEdit={isEditMode} // 헤더에 수정 모드 전달 (버튼 텍스트 변경 등)

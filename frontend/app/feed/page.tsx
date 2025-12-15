@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
@@ -10,13 +10,18 @@ import FeedHeader from '@/components/feed/FeedHeader'
 import FeedItem from '@/components/feed/FeedItem'
 import SubscribedBlogs from '@/components/feed/SubscribedBlogs'
 
+const POSTS_PER_PAGE = 10
+
 export default function FeedPage() {
     const router = useRouter()
     const [user, setUser] = useState<User | null>(null)
     const [posts, setPosts] = useState<PostListItem[]>([])
     const [blogs, setBlogs] = useState<SubscribedBlog[]>([])
     const [loading, setLoading] = useState(true)
+    const [loadingMore, setLoadingMore] = useState(false)
+    const [hasMore, setHasMore] = useState(true)
     const [counts, setCounts] = useState({ following: 0, followers: 0 })
+    const loadMoreRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const init = async () => {
@@ -32,7 +37,7 @@ export default function FeedPage() {
 
             try {
                 const [feedPosts, subCounts, subscribedBlogs] = await Promise.all([
-                    getFeedPosts(20),
+                    getFeedPosts(POSTS_PER_PAGE, 0),
                     getSubscriptionCounts(user.id),
                     getSubscribedBlogs(user.id, 10)
                 ])
@@ -40,6 +45,7 @@ export default function FeedPage() {
                 setPosts(feedPosts)
                 setCounts(subCounts)
                 setBlogs(subscribedBlogs)
+                setHasMore(feedPosts.length === POSTS_PER_PAGE)
             } catch (error) {
                 console.error('Feed loading failed:', error)
             } finally {
@@ -49,6 +55,47 @@ export default function FeedPage() {
 
         init()
     }, [router])
+
+    // 추가 데이터 로드
+    const loadMore = useCallback(async () => {
+        if (loadingMore || !hasMore) return
+
+        setLoadingMore(true)
+        try {
+            const newPosts = await getFeedPosts(POSTS_PER_PAGE, posts.length)
+            setPosts(prev => [...prev, ...newPosts])
+            setHasMore(newPosts.length === POSTS_PER_PAGE)
+        } catch (error) {
+            console.error('Load more failed:', error)
+        } finally {
+            setLoadingMore(false)
+        }
+    }, [loadingMore, hasMore, posts.length])
+
+    // Intersection Observer로 스크롤 감지
+    useEffect(() => {
+        if (loading || !hasMore) return
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    loadMore()
+                }
+            },
+            { threshold: 0.1 }
+        )
+
+        const currentRef = loadMoreRef.current
+        if (currentRef) {
+            observer.observe(currentRef)
+        }
+
+        return () => {
+            if (currentRef) {
+                observer.unobserve(currentRef)
+            }
+        }
+    }, [loading, hasMore, loadMore])
 
     if (loading) {
         return (
@@ -112,9 +159,28 @@ export default function FeedPage() {
 
                         <div>
                             {posts.length > 0 ? (
-                                posts.map((post) => (
-                                    <FeedItem key={post.id} post={post} />
-                                ))
+                                <>
+                                    {posts.map((post) => (
+                                        <FeedItem key={post.id} post={post} />
+                                    ))}
+
+                                    {/* 무한스크롤 감지 영역 */}
+                                    <div ref={loadMoreRef} className="h-10" />
+
+                                    {/* 로딩 인디케이터 */}
+                                    {loadingMore && (
+                                        <div className="flex justify-center py-8">
+                                            <div className="h-6 w-6 animate-spin rounded-full border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white" />
+                                        </div>
+                                    )}
+
+                                    {/* 더 이상 없음 표시 */}
+                                    {!hasMore && posts.length > 0 && (
+                                        <div className="py-8 text-center text-sm text-black/40 dark:text-white/40">
+                                            모든 글을 확인했습니다
+                                        </div>
+                                    )}
+                                </>
                             ) : hasNoContent ? (
                                 // 구독도 없고 글도 없는 경우
                                 <div className="py-16 text-center">

@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import { env } from './config/env.js'
+import blogsRouter from './routes/blogs.js'
 import uploadRouter from './routes/upload.js'
 import postsRouter from './routes/posts.js'
 import categoriesRouter from './routes/categories.js'
@@ -24,6 +25,7 @@ app.use(cors({
 app.use(express.json())
 
 // Routes
+app.use('/api/blogs', blogsRouter)
 app.use('/api/upload', uploadRouter)
 app.use('/api/posts', postsRouter)
 app.use('/api/categories', categoriesRouter)
