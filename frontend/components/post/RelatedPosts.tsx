@@ -21,18 +21,18 @@ export default function RelatedPosts({
     nextPost
 }: RelatedPostsProps) {
     return (
-        <div className="mt-12 mb-12">
-            <h3 className="mb-4 text-sm font-medium text-black/60 dark:text-white/60">
+        <div className="mt-12 mb-12 text-[var(--blog-fg)]">
+            <h3 className="mb-4 text-sm font-medium opacity-60">
                 '{categoryName}'의 다른글
             </h3>
-            <div className="flex flex-col gap-2 border-t border-b border-black/5 py-4 dark:border-white/5">
+            <div className="flex flex-col gap-2 border-t border-b border-[var(--blog-fg)]/10 py-4">
                 {/* 다음 글 (최신) */}
                 {nextPost && (
                     <div className="flex items-center gap-4 text-sm">
-                        <span className="w-12 shrink-0 text-black/40 dark:text-white/40">다음글</span>
+                        <span className="w-12 shrink-0 opacity-40">다음글</span>
                         <Link
                             href={`/post/${nextPost.id}`}
-                            className="truncate text-black/60 hover:text-black hover:underline dark:text-white/60 dark:hover:text-white"
+                            className="truncate opacity-60 hover:opacity-100 hover:underline"
                         >
                             {nextPost.title}
                         </Link>
@@ -41,8 +41,8 @@ export default function RelatedPosts({
 
                 {/* 현재 글 */}
                 <div className="flex items-center gap-4 text-sm">
-                    <span className="w-12 shrink-0 text-black/40 dark:text-white/40">현재글</span>
-                    <span className="truncate font-medium text-black dark:text-white">
+                    <span className="w-12 shrink-0 opacity-40">현재글</span>
+                    <span className="truncate font-medium">
                         {currentPost.title}
                     </span>
                 </div>
@@ -50,10 +50,10 @@ export default function RelatedPosts({
                 {/* 이전 글 (과거) */}
                 {prevPost && (
                     <div className="flex items-center gap-4 text-sm">
-                        <span className="w-12 shrink-0 text-black/40 dark:text-white/40">이전글</span>
+                        <span className="w-12 shrink-0 opacity-40">이전글</span>
                         <Link
                             href={`/post/${prevPost.id}`}
-                            className="truncate text-black/60 hover:text-black hover:underline dark:text-white/60 dark:hover:text-white"
+                            className="truncate opacity-60 hover:opacity-100 hover:underline"
                         >
                             {prevPost.title}
                         </Link>
