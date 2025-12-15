@@ -79,9 +79,9 @@ export default function CommentForm({
 
     if (!user) {
         return (
-            <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3 dark:border-white/10 dark:bg-white/[0.02]">
-                <div className={`${isReply ? 'h-7 w-7' : 'h-9 w-9'} shrink-0 rounded-full bg-black/10 dark:bg-white/10`} />
-                <span className="text-sm text-black/50 dark:text-white/50">
+            <div className="flex items-center gap-3 rounded-xl border border-[var(--blog-border)] bg-[var(--blog-fg)]/[0.02] px-4 py-3">
+                <div className={`${isReply ? 'h-7 w-7' : 'h-9 w-9'} shrink-0 rounded-full bg-[var(--blog-fg)]/10`} />
+                <span className="text-sm text-[var(--blog-muted)]">
                     로그인 후 댓글을 작성할 수 있습니다.
                 </span>
             </div>
@@ -100,7 +100,7 @@ export default function CommentForm({
                             className="h-full w-full rounded-full object-cover"
                         />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center rounded-full bg-black/10 text-xs font-medium text-black/50 dark:bg-white/10 dark:text-white/50">
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--blog-fg)]/10 text-xs font-medium text-[var(--blog-muted)]">
                             {(displayName || 'U').charAt(0).toUpperCase()}
                         </div>
                     )}
@@ -110,8 +110,8 @@ export default function CommentForm({
                 <div className="min-w-0 flex-1">
                     <div className={`overflow-hidden rounded-xl border transition-colors ${
                         isFocused
-                            ? 'border-black/20 bg-white dark:border-white/20 dark:bg-neutral-900'
-                            : 'border-black/10 bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]'
+                            ? 'border-[var(--blog-border)] bg-[var(--blog-card-bg)]'
+                            : 'border-[var(--blog-border)] bg-[var(--blog-fg)]/[0.02]'
                     }`}>
                         <textarea
                             ref={textareaRef}
@@ -122,7 +122,7 @@ export default function CommentForm({
                             }}
                             onFocus={() => setIsFocused(true)}
                             placeholder={placeholder}
-                            className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40"
+                            className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-[var(--blog-fg)] outline-none placeholder:text-[var(--blog-muted)]"
                             rows={1}
                             maxLength={MAX_LENGTH}
                         />
@@ -131,14 +131,14 @@ export default function CommentForm({
                     {/* 버튼 영역 */}
                     {isFocused && (
                         <div className="mt-3 flex items-center justify-between">
-                            <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-black/40 dark:text-white/40'}`}>
+                            <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-[var(--blog-muted)]'}`}>
                                 {text.length}/{MAX_LENGTH}
                             </span>
                             <div className="flex items-center gap-2">
                                 <button
                                     type="button"
                                     onClick={handleCancel}
-                                    className="rounded-lg px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5"
+                                    className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--blog-fg)]/70 transition-colors hover:bg-[var(--blog-fg)]/5"
                                 >
                                     취소
                                 </button>
@@ -147,8 +147,8 @@ export default function CommentForm({
                                     disabled={!text.trim() || loading}
                                     className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                                         text.trim() && !loading
-                                            ? 'bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90'
-                                            : 'cursor-not-allowed bg-black/10 text-black/30 dark:bg-white/10 dark:text-white/30'
+                                            ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90'
+                                            : 'cursor-not-allowed bg-[var(--blog-fg)]/10 text-[var(--blog-fg)]/30'
                                     }`}
                                 >
                                     {loading ? '등록 중...' : isReply ? '답글' : '댓글'}

@@ -21,11 +21,11 @@ export default function SubscriptionCard({
     profileImageUrl
 }: SubscriptionCardProps) {
     return (
-        <div className="mt-12 rounded-xl border border-black/10 bg-black/[0.02] p-6 dark:border-white/10 dark:bg-white/[0.02]">
+        <div className="mt-12 rounded-xl border border-[var(--blog-border)] bg-[var(--blog-fg)]/[0.02] p-6">
             <div className="flex items-center gap-4">
                 {/* 프로필 이미지 */}
                 <Link href={`/blog/${blogId}`} className="shrink-0">
-                    <div className="h-16 w-16 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                    <div className="h-16 w-16 overflow-hidden rounded-full bg-[var(--blog-fg)]/10">
                         {(thumbnailUrl || profileImageUrl) ? (
                             <img
                                 src={thumbnailUrl || profileImageUrl || ''}
@@ -33,7 +33,7 @@ export default function SubscriptionCard({
                                 className="h-full w-full object-cover"
                             />
                         ) : (
-                            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-black/30 dark:text-white/30">
+                            <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-[var(--blog-muted)]">
                                 {blogName.charAt(0)}
                             </div>
                         )}
@@ -44,11 +44,11 @@ export default function SubscriptionCard({
                 <div className="flex-1 min-w-0">
                     <Link
                         href={`/blog/${blogId}`}
-                        className="text-lg font-bold text-black hover:underline dark:text-white"
+                        className="text-lg font-bold text-[var(--blog-fg)] hover:underline"
                     >
                         {blogName}
                     </Link>
-                    <p className="mt-1 truncate text-sm text-black/60 dark:text-white/60">
+                    <p className="mt-1 truncate text-sm text-[var(--blog-fg)]/60">
                         {blogDescription || '소개글이 없습니다.'}
                     </p>
                 </div>

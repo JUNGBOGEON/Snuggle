@@ -65,7 +65,7 @@ export default function PostActions({
                 className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-all ${
                     isLiked
                         ? 'border-red-500 bg-red-50 text-red-500 dark:bg-red-500/10'
-                        : 'border-black/10 bg-white text-black/70 hover:border-black/20 hover:bg-black/5 dark:border-white/10 dark:bg-zinc-900 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5'
+                        : 'border-[var(--blog-border)] bg-[var(--blog-card-bg)] text-[var(--blog-fg)]/70 hover:border-[var(--blog-fg)]/20 hover:bg-[var(--blog-fg)]/5'
                 }`}
             >
                 <svg
@@ -86,7 +86,7 @@ export default function PostActions({
             {/* 공유 버튼 */}
             <button
                 onClick={handleShare}
-                className="flex items-center gap-2 rounded-full border border-black/10 bg-white px-5 py-2.5 text-sm font-medium text-black/70 transition-all hover:border-black/20 hover:bg-black/5 dark:border-white/10 dark:bg-zinc-900 dark:text-white/70 dark:hover:border-white/20 dark:hover:bg-white/5"
+                className="flex items-center gap-2 rounded-full border border-[var(--blog-border)] bg-[var(--blog-card-bg)] px-5 py-2.5 text-sm font-medium text-[var(--blog-fg)]/70 transition-all hover:border-[var(--blog-fg)]/20 hover:bg-[var(--blog-fg)]/5"
             >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path

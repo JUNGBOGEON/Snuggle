@@ -177,11 +177,11 @@ export default function CommentSection({ postId, onCountChange }: CommentSection
     )
 
     return (
-        <section className="mt-16 border-t border-black/10 pt-10 dark:border-white/10">
+        <section className="mt-16 border-t border-[var(--blog-border)] pt-10">
             {/* 헤더 */}
-            <h2 className="mb-6 text-lg font-semibold text-black dark:text-white">
+            <h2 className="mb-6 text-lg font-semibold text-[var(--blog-fg)]">
                 댓글 {totalCount > 0 && (
-                    <span className="ml-1 font-normal text-black/50 dark:text-white/50">{totalCount}</span>
+                    <span className="ml-1 font-normal text-[var(--blog-muted)]">{totalCount}</span>
                 )}
             </h2>
 
@@ -195,10 +195,10 @@ export default function CommentSection({ postId, onCountChange }: CommentSection
             </div>
 
             {/* 댓글 목록 */}
-            <div className="divide-y divide-black/5 dark:divide-white/5">
+            <div className="divide-y divide-[var(--blog-border)]">
                 {loading ? (
                     <div className="flex justify-center py-12">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-black/10 border-t-black dark:border-white/10 dark:border-t-white" />
+                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--blog-border)] border-t-[var(--blog-fg)]" />
                     </div>
                 ) : sortedRootComments.length > 0 ? (
                     <>
@@ -222,13 +222,13 @@ export default function CommentSection({ postId, onCountChange }: CommentSection
                         {/* 로딩 인디케이터 */}
                         {loadingMore && (
                             <div className="flex justify-center py-6">
-                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-black/10 border-t-black dark:border-white/10 dark:border-t-white" />
+                                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--blog-border)] border-t-[var(--blog-fg)]" />
                             </div>
                         )}
                     </>
                 ) : (
                     <div className="py-12 text-center">
-                        <p className="text-sm text-black/40 dark:text-white/40">
+                        <p className="text-sm text-[var(--blog-muted)]">
                             아직 댓글이 없습니다. 첫 번째 댓글을 남겨보세요!
                         </p>
                     </div>

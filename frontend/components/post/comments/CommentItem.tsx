@@ -158,7 +158,7 @@ export default function CommentItem({
                             className="h-full w-full rounded-full object-cover"
                         />
                     ) : (
-                        <div className="flex h-full w-full items-center justify-center rounded-full bg-black/10 text-xs font-medium text-black/50 dark:bg-white/10 dark:text-white/50">
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-[var(--blog-fg)]/10 text-xs font-medium text-[var(--blog-muted)]">
                             {(displayName || 'U').charAt(0).toUpperCase()}
                         </div>
                     )}
@@ -168,14 +168,14 @@ export default function CommentItem({
                 <div className="min-w-0 flex-1">
                     {/* 헤더 */}
                     <div className="flex items-center gap-2">
-                        <span className={`font-medium text-black dark:text-white ${isReply ? 'text-sm' : 'text-sm'}`}>
+                        <span className={`font-medium text-[var(--blog-fg)] ${isReply ? 'text-sm' : 'text-sm'}`}>
                             {displayName}
                         </span>
-                        <span className="text-xs text-black/40 dark:text-white/40">
+                        <span className="text-xs text-[var(--blog-muted)]">
                             {formatDate(comment.created_at)}
                         </span>
                         {isEdited && (
-                            <span className="text-xs text-black/40 dark:text-white/40">(수정됨)</span>
+                            <span className="text-xs text-[var(--blog-muted)]">(수정됨)</span>
                         )}
 
                         {/* 더보기 메뉴 - 헤더 오른쪽 끝 */}
@@ -183,7 +183,7 @@ export default function CommentItem({
                             <div className="relative ml-auto" ref={menuRef}>
                                 <button
                                     onClick={() => setShowMenu(!showMenu)}
-                                    className="rounded-lg p-1 text-black/40 transition-colors hover:bg-black/5 hover:text-black/60 dark:text-white/40 dark:hover:bg-white/5 dark:hover:text-white/60"
+                                    className="rounded-lg p-1 text-[var(--blog-muted)] transition-colors hover:bg-[var(--blog-fg)]/5 hover:text-[var(--blog-fg)]/60"
                                     aria-label="더보기"
                                 >
                                     <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -194,17 +194,17 @@ export default function CommentItem({
                                 </button>
 
                                 {showMenu && (
-                                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[100px] overflow-hidden rounded-xl border border-black/10 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-neutral-900">
+                                    <div className="absolute right-0 top-full z-20 mt-1 min-w-[100px] overflow-hidden rounded-xl border border-[var(--blog-border)] bg-[var(--blog-card-bg)] py-1 shadow-lg">
                                         <button
                                             onClick={handleEdit}
-                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-black/80 transition-colors hover:bg-black/5 dark:text-white/80 dark:hover:bg-white/5"
+                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-[var(--blog-fg)]/80 transition-colors hover:bg-[var(--blog-fg)]/5"
                                         >
                                             수정
                                         </button>
                                         <button
                                             onClick={handleDelete}
                                             disabled={isDeleting}
-                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+                                            className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-500 transition-colors hover:bg-[var(--blog-fg)]/5"
                                         >
                                             {isDeleting ? '삭제 중...' : '삭제'}
                                         </button>
@@ -217,7 +217,7 @@ export default function CommentItem({
                     {/* 본문 or 수정 폼 */}
                     {isEditing ? (
                         <div className="mt-2">
-                            <div className="overflow-hidden rounded-xl border border-black/20 bg-white dark:border-white/20 dark:bg-neutral-900">
+                            <div className="overflow-hidden rounded-xl border border-[var(--blog-border)] bg-[var(--blog-card-bg)]">
                                 <textarea
                                     ref={editTextareaRef}
                                     value={editText}
@@ -226,28 +226,28 @@ export default function CommentItem({
                                         e.target.style.height = 'auto'
                                         e.target.style.height = e.target.scrollHeight + 'px'
                                     }}
-                                    className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-black outline-none dark:text-white"
+                                    className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-[var(--blog-fg)] outline-none"
                                     rows={1}
                                 />
                             </div>
                             <div className="mt-3 flex justify-end gap-2">
                                 <button
                                     onClick={handleCancelEdit}
-                                    className="rounded-lg px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5"
+                                    className="rounded-lg px-4 py-2 text-sm font-medium text-[var(--blog-fg)]/70 transition-colors hover:bg-[var(--blog-fg)]/5"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={handleSaveEdit}
                                     disabled={isSaving || !editText.trim()}
-                                    className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-white dark:text-black dark:hover:bg-white/90"
+                                    className="rounded-lg bg-[var(--blog-fg)] px-4 py-2 text-sm font-medium text-[var(--blog-bg)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                                 >
                                     {isSaving ? '저장 중...' : '저장'}
                                 </button>
                             </div>
                         </div>
                     ) : (
-                        <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-black/80 dark:text-white/80">
+                        <p className="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-[var(--blog-fg)]/80">
                             {comment.comment_text}
                         </p>
                     )}
@@ -257,7 +257,7 @@ export default function CommentItem({
                         <div className="mt-2 flex items-center gap-4">
                             <button
                                 onClick={handleReplyClick}
-                                className="flex items-center gap-1 text-xs text-black/40 transition-colors hover:text-black/70 dark:text-white/40 dark:hover:text-white/70"
+                                className="flex items-center gap-1 text-xs text-[var(--blog-muted)] transition-colors hover:text-[var(--blog-fg)]/70"
                             >
                                 <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a5 5 0 015 5v6M3 10l6 6m-6-6l6-6" />
@@ -285,7 +285,7 @@ export default function CommentItem({
                     {!isReply && sortedReplies.length > 0 && (
                         <button
                             onClick={() => setShowReplies(!showReplies)}
-                            className="mt-3 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-black/60 transition-colors hover:bg-black/5 dark:text-white/60 dark:hover:bg-white/5"
+                            className="mt-3 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--blog-fg)]/60 transition-colors hover:bg-[var(--blog-fg)]/5"
                         >
                             <svg
                                 className={`h-4 w-4 transition-transform duration-200 ${showReplies ? 'rotate-180' : ''}`}
@@ -304,7 +304,7 @@ export default function CommentItem({
                         <div className="relative mt-4 ml-[6px]">
                             {/* 메인 세로 연결선 - 루트 댓글 프로필 중앙에서 시작 */}
                             <div
-                                className="absolute w-[2px] bg-black/15 dark:bg-white/15"
+                                className="absolute w-[2px] bg-[var(--blog-fg)]/15"
                                 style={{
                                     left: '-42px',
                                     top: '-20px',
@@ -316,7 +316,7 @@ export default function CommentItem({
                                 <div key={reply.id} className="relative" style={{ marginTop: index > 0 ? '16px' : '0' }}>
                                     {/* 곡선 연결선 - L자 모양 */}
                                     <div
-                                        className="absolute border-l-2 border-b-2 border-black/15 dark:border-white/15 rounded-bl-xl"
+                                        className="absolute border-l-2 border-b-2 border-[var(--blog-fg)]/15 rounded-bl-xl"
                                         style={{
                                             left: '-42px',
                                             top: '0',
