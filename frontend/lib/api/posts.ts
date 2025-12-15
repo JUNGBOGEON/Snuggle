@@ -47,6 +47,7 @@ export interface PostListItem {
   content: string
   thumbnail_url: string | null
   created_at: string
+  is_private?: boolean
   blog_id: string
   blog: {
     name: string
