@@ -5,6 +5,8 @@ import { useUserStore } from '@/lib/store/useUserStore'
 import { useBlogStore } from '@/lib/store/useBlogStore'
 import { useModal } from '@/components/common/Modal'
 
+const MAX_LENGTH = 500
+
 interface CommentFormProps {
     onSubmit: (text: string) => Promise<void>
     placeholder?: string
@@ -85,14 +87,19 @@ export default function CommentForm({
                     </div>
                     <textarea
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
                         onKeyDown={handleKeyDown}
                         placeholder={placeholder}
                         className="w-full resize-none bg-transparent text-sm text-[var(--blog-fg)] placeholder-[var(--blog-muted)] outline-none"
                         rows={3}
                         autoFocus={autoFocus}
+                        maxLength={MAX_LENGTH}
                     />
-                    <div className="mt-2 flex items-center justify-end gap-2">
+                    <div className="mt-2 flex items-center justify-between">
+                        <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-[var(--blog-muted)]'}`}>
+                            {text.length}/{MAX_LENGTH}
+                        </span>
+                        <div className="flex items-center gap-2">
                         {onCancel && (
                             <button
                                 type="button"
@@ -102,16 +109,17 @@ export default function CommentForm({
                                 취소
                             </button>
                         )}
-                        <button
-                            type="submit"
-                            disabled={!text.trim() || loading}
-                            className={`rounded px-4 py-1.5 text-xs font-bold transition-colors ${text.trim() && !loading
-                                ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90'
-                                : 'cursor-not-allowed bg-[var(--blog-border)] text-[var(--blog-muted)]'
-                                }`}
-                        >
-                            {loading ? '등록 중...' : buttonLabel}
-                        </button>
+                            <button
+                                type="submit"
+                                disabled={!text.trim() || loading}
+                                className={`rounded px-4 py-1.5 text-xs font-bold transition-colors ${text.trim() && !loading
+                                    ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90'
+                                    : 'cursor-not-allowed bg-[var(--blog-border)] text-[var(--blog-muted)]'
+                                    }`}
+                            >
+                                {loading ? '등록 중...' : buttonLabel}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
