@@ -24,12 +24,12 @@ export default function MyBlogSidebar() {
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (!user) {
-      setLoading(false)
-      return
-    }
-
     const fetchBlogs = async () => {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
       const supabase = createClient()
 
       const { data, error } = await supabase
@@ -155,7 +155,7 @@ export default function MyBlogSidebar() {
                     alt={blog.name}
                     fallback={blog.name}
                     size="sm"
-                    rounded="lg"
+                    rounded="xl"
                   />
                   <span className="flex-1 text-sm font-medium text-black dark:text-white">
                     {blog.name}
