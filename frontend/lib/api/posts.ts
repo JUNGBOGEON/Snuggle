@@ -4,6 +4,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
 
 async function getAuthToken(): Promise<string | null> {
   const supabase = createClient()
+  // 먼저 현재 사용자 확인 (서버 검증)
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  // 세션 가져오기
   const { data: { session } } = await supabase.auth.getSession()
   return session?.access_token || null
 }
@@ -47,6 +52,7 @@ export interface PostListItem {
   content: string
   thumbnail_url: string | null
   created_at: string
+  is_private?: boolean
   blog_id: string
   blog: {
     name: string
@@ -119,27 +125,47 @@ export async function createPost(data: {
   is_allow_comment?: boolean
   thumbnail_url?: string | null
 }): Promise<Post> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/posts`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
+  // 블로그가 현재 사용자의 것인지 확인
+  const { data: blog } = await supabase
+    .from('blogs')
+    .select('id, user_id')
+    .eq('id', data.blog_id)
+    .single()
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create post')
+  if (!blog || blog.user_id !== user.id) {
+    throw new Error('블로그 권한이 없습니다')
   }
 
-  return response.json()
+  // 게시글 생성
+  const { data: post, error } = await supabase
+    .from('posts')
+    .insert({
+      blog_id: data.blog_id,
+      user_id: user.id,
+      title: data.title,
+      content: data.content,
+      category_id: data.category_ids?.[0] || null,
+      published: data.published ?? true,
+      is_private: data.is_private ?? false,
+      is_allow_comment: data.is_allow_comment ?? true,
+      thumbnail_url: data.thumbnail_url || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to create post:', error)
+    throw new Error(error.message || 'Failed to create post')
+  }
+
+  return post
 }
 
 // 게시글 수정
@@ -155,47 +181,60 @@ export async function updatePost(
     thumbnail_url?: string | null
   }
 ): Promise<Post> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/posts/${id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to update post')
+  // 업데이트할 데이터 구성
+  const updateData: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
   }
 
-  return response.json()
+  if (data.title !== undefined) updateData.title = data.title
+  if (data.content !== undefined) updateData.content = data.content
+  if (data.category_ids !== undefined) updateData.category_id = data.category_ids[0] || null
+  if (data.published !== undefined) updateData.published = data.published
+  if (data.is_private !== undefined) updateData.is_private = data.is_private
+  if (data.is_allow_comment !== undefined) updateData.is_allow_comment = data.is_allow_comment
+  if (data.thumbnail_url !== undefined) updateData.thumbnail_url = data.thumbnail_url
+
+  const { data: post, error } = await supabase
+    .from('posts')
+    .update(updateData)
+    .eq('id', id)
+    .eq('user_id', user.id)  // 본인 글만 수정 가능
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Failed to update post:', error)
+    throw new Error(error.message || 'Failed to update post')
+  }
+
+  return post
 }
 
 // 게시글 삭제
 export async function deletePost(id: string): Promise<void> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/posts/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { error } = await supabase
+    .from('posts')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)  // 본인 글만 삭제 가능
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete post')
+  if (error) {
+    console.error('Failed to delete post:', error)
+    throw new Error(error.message || 'Failed to delete post')
   }
 }
 

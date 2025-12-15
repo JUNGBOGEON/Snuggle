@@ -69,8 +69,10 @@ export default function ForumWrite({ onPostSuccess }: ForumWriteProps) {
             setContent('')
 
             if (onPostSuccess) {
+                window.scrollTo(0, 0)
                 onPostSuccess()
             } else {
+                window.scrollTo(0, 0)
                 router.refresh()
             }
         } catch (error) {
@@ -180,8 +182,8 @@ export default function ForumWrite({ onPostSuccess }: ForumWriteProps) {
                     onClick={onButtonClick}
                     disabled={submitting} // Removed !isValid from disabled to allow click for alert, but handle styling manually
                     className={`rounded-full px-8 py-2 text-sm text-white transition-colors disabled:opacity-50 ${isValid
-                            ? 'bg-black hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80'
-                            : 'bg-[#999] hover:bg-[#888]'
+                        ? 'bg-black hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80'
+                        : 'bg-[#999] hover:bg-[#888]'
                         }`}
                 >
                     등록

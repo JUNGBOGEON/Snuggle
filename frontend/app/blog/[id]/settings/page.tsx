@@ -41,7 +41,7 @@ interface Category {
 interface PostItem {
   id: string
   title: string
-  published: boolean
+  is_private: boolean
   created_at: string
 }
 
@@ -195,7 +195,7 @@ export default function BlogSettingsPage() {
         setPosts(postData.map(p => ({
           id: p.id,
           title: p.title,
-          published: p.published,
+          is_private: p.is_private || false,
           created_at: p.created_at,
         })))
       } catch (err) {
@@ -341,14 +341,14 @@ export default function BlogSettingsPage() {
     }
   }
 
-  const handleTogglePublish = async (postId: string, currentPublished: boolean) => {
+  const handleTogglePrivate = async (postId: string, currentIsPrivate: boolean) => {
     try {
-      await updatePost(postId, { published: !currentPublished })
+      await updatePost(postId, { is_private: !currentIsPrivate })
       setPosts(posts.map(p =>
-        p.id === postId ? { ...p, published: !currentPublished } : p
+        p.id === postId ? { ...p, is_private: !currentIsPrivate } : p
       ))
     } catch (err) {
-      console.error('Failed to toggle publish:', err)
+      console.error('Failed to toggle private:', err)
       showToast('상태 변경에 실패했습니다', 'error')
     }
   }
@@ -474,11 +474,10 @@ export default function BlogSettingsPage() {
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-                    activeTab === item.id
-                      ? 'bg-black text-white dark:bg-white dark:text-black'
-                      : 'text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5'
-                  }`}
+                  className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${activeTab === item.id
+                    ? 'bg-black text-white dark:bg-white dark:text-black'
+                    : 'text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5'
+                    }`}
                 >
                   {item.icon}
                   {item.label}
@@ -714,9 +713,8 @@ export default function BlogSettingsPage() {
                   {posts.map((post, index) => (
                     <div
                       key={post.id}
-                      className={`flex items-center justify-between px-4 py-4 ${
-                        index !== posts.length - 1 ? 'border-b border-black/10 dark:border-white/10' : ''
-                      }`}
+                      className={`flex items-center justify-between px-4 py-4 ${index !== posts.length - 1 ? 'border-b border-black/10 dark:border-white/10' : ''
+                        }`}
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
@@ -726,8 +724,8 @@ export default function BlogSettingsPage() {
                           >
                             {post.title}
                           </a>
-                          {!post.published && (
-                            <span className="shrink-0 rounded bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-500">
+                          {post.is_private && (
+                            <span className="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                               비공개
                             </span>
                           )}
@@ -738,10 +736,10 @@ export default function BlogSettingsPage() {
                       </div>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleTogglePublish(post.id, post.published)}
+                          onClick={() => handleTogglePrivate(post.id, post.is_private)}
                           className="rounded-lg px-3 py-1.5 text-sm text-black/70 hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5"
                         >
-                          {post.published ? '비공개로' : '공개로'}
+                          {post.is_private ? '공개로' : '비공개로'}
                         </button>
                         <a
                           href={`/write?edit=${post.id}`}

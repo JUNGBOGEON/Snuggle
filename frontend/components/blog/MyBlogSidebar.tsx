@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useUserStore } from '@/lib/store/useUserStore'
-import { useBlogStore, Blog } from '@/lib/store/useBlogStore'
+import { useBlogStore } from '@/lib/store/useBlogStore'
 import ProfileImage from '@/components/common/ProfileImage'
 import KakaoLoginButton from '@/components/auth/KakaoLoginButton'
 
@@ -12,14 +12,13 @@ export default function MyBlogSidebar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
+  // 사용자가 로그인되면 블로그 목록 가져오기
   useEffect(() => {
     if (isUserLoading) return
 
-    if (!user) {
-      return
+    if (user) {
+      fetchBlogs(user.id)
     }
-
-    fetchBlogs(user.id)
   }, [user, isUserLoading, fetchBlogs])
 
   // 드롭다운 외부 클릭 감지
@@ -34,9 +33,11 @@ export default function MyBlogSidebar() {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const handleSelectBlog = (blog: Blog) => {
-    selectBlog(blog)
-    setIsDropdownOpen(false)
+  const handleSelectBlog = (blog: typeof selectedBlog) => {
+    if (blog) {
+      selectBlog(blog)
+      setIsDropdownOpen(false)
+    }
   }
 
   // 유저 로딩 중이거나 블로그 로딩 중

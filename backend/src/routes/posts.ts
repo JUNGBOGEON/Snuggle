@@ -46,7 +46,6 @@ router.get('/feed', authMiddleware, async (req: AuthenticatedRequest, res: Respo
         blog:blogs ( name, thumbnail_url, user_id )
       `)
       .in('user_id', subscribedUserIds)
-      .eq('published', true)
       .eq('is_private', false)
       .order('created_at', { ascending: false })
       .limit(limit)
@@ -106,10 +105,9 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     const { data: posts, error } = await supabase
       .from('posts')
       .select(`
-        id, title, content, thumbnail_url, created_at, blog_id,
+        id, title, content, thumbnail_url, created_at, blog_id, is_private,
         blog:blogs ( name, thumbnail_url, user_id )
       `)
-      .eq('is_private', false)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -191,10 +189,10 @@ router.get('/blog/:blogId', async (req: Request, res: Response): Promise<void> =
       .eq('blog_id', blogId)
       .order('created_at', { ascending: false })
 
-    // 소유자가 아니면 공개글만
-    if (!isOwner) {
-      query = query.eq('is_private', false)
-    }
+    // 소유자가 아니면 공개글만 -> 이제 목록에서는 모두 노출
+    // if (!isOwner) {
+    //   query = query.eq('is_private', false)
+    // }
 
     const { data, error } = await query
 
@@ -321,7 +319,7 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res: Response
         user_id: user.id,
         title: title.trim(),
         content: content || '',
-        published: true,
+        published: true, // 항상 공개 상태로 저장 (is_private로 제어)
         is_private: is_private ?? false,
         is_allow_comment: is_allow_comment ?? true,
         thumbnail_url: thumbnail_url || extractFirstImageUrl(content || ''),
@@ -393,8 +391,13 @@ router.patch('/:id', authMiddleware, async (req: AuthenticatedRequest, res: Resp
       updateData.content = content
       updateData.thumbnail_url = extractFirstImageUrl(content)
     }
-    if (is_private !== undefined) updateData.is_private = is_private
-    if (is_allow_comment !== undefined) updateData.is_allow_comment = is_allow_comment
+    if (is_private !== undefined) (updateData as any).is_private = is_private
+    // is_private 변경 시 (또는 항상) published는 true로 강제하여 DB RLS 통과 보장
+    if (is_private !== undefined || title !== undefined || content !== undefined) {
+      (updateData as any).published = true
+    }
+
+    // if (is_allow_comment !== undefined) (updateData as any).is_allow_comment = is_allow_comment // DB 컬럼 없음 대비 임시 주석
     if (thumbnail_url !== undefined) updateData.thumbnail_url = thumbnail_url
 
     const { data, error } = await authClient

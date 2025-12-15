@@ -55,13 +55,16 @@ export default function SkinsPage() {
       setUser(user)
 
       if (user) {
-        const { data: blogData } = await supabase
+        const { data: blogs } = await supabase
           .from('blogs')
           .select('id, name, description, thumbnail_url')
           .eq('user_id', user.id)
-          .single()
+          .is('deleted_at', null)
+          .order('created_at', { ascending: true })
+          .limit(1)
 
-        if (blogData) {
+        if (blogs && blogs.length > 0) {
+          const blogData = blogs[0]
           setUserBlog(blogData)
 
           try {

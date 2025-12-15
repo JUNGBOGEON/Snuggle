@@ -1,13 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'
-
-async function getAuthToken(): Promise<string | null> {
-  const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  return session?.access_token || null
-}
-
 export interface BlogItem {
   id: string
   name: string
@@ -78,111 +70,121 @@ export async function getNewBlogs(limit = 3): Promise<BlogItem[]> {
 
 // 내 블로그 목록 조회
 export async function getMyBlogs(): Promise<MyBlog[]> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/blogs/my`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { data, error } = await supabase
+    .from('blogs')
+    .select('id, name, description, thumbnail_url, created_at, updated_at')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
 
-  if (!response.ok) {
+  if (error) {
+    console.error('Failed to fetch my blogs:', error)
     throw new Error('Failed to fetch my blogs')
   }
 
-  return response.json()
+  return data || []
 }
 
 // 삭제된 블로그 목록 조회
 export async function getDeletedBlogs(): Promise<DeletedBlog[]> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/blogs/deleted`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { data, error } = await supabase
+    .from('blogs')
+    .select('id, name, description, thumbnail_url, created_at, deleted_at')
+    .eq('user_id', user.id)
+    .not('deleted_at', 'is', null)
+    .order('deleted_at', { ascending: false })
 
-  if (!response.ok) {
+  if (error) {
+    console.error('Failed to fetch deleted blogs:', error)
     throw new Error('Failed to fetch deleted blogs')
   }
 
-  return response.json()
+  return data || []
 }
 
 // 블로그 생성
-export async function createBlog(data: { name: string; description?: string }): Promise<MyBlog> {
-  const token = await getAuthToken()
+export async function createBlog(blogData: { name: string; description?: string }): Promise<MyBlog> {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/blogs`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(data),
-  })
+  const { data, error } = await supabase
+    .from('blogs')
+    .insert({
+      user_id: user.id,
+      name: blogData.name,
+      description: blogData.description || null,
+    })
+    .select('id, name, description, thumbnail_url, created_at, updated_at')
+    .single()
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to create blog')
+  if (error) {
+    console.error('Failed to create blog:', error)
+    throw new Error(error.message || 'Failed to create blog')
   }
 
-  return response.json()
+  return data
 }
 
 // 블로그 삭제 (Soft Delete)
 export async function deleteBlog(id: string): Promise<void> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/blogs/${id}`, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { error } = await supabase
+    .from('blogs')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('user_id', user.id)
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to delete blog')
+  if (error) {
+    console.error('Failed to delete blog:', error)
+    throw new Error(error.message || 'Failed to delete blog')
   }
 }
 
 // 블로그 복구
 export async function restoreBlog(id: string): Promise<MyBlog> {
-  const token = await getAuthToken()
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  if (!token) {
+  if (!user) {
     throw new Error('Not authenticated')
   }
 
-  const response = await fetch(`${API_URL}/api/blogs/${id}/restore`, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
+  const { data, error } = await supabase
+    .from('blogs')
+    .update({ deleted_at: null })
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select('id, name, description, thumbnail_url, created_at, updated_at')
+    .single()
 
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(error.error || 'Failed to restore blog')
+  if (error) {
+    console.error('Failed to restore blog:', error)
+    throw new Error(error.message || 'Failed to restore blog')
   }
 
-  return response.json()
+  return data
 }

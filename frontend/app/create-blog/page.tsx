@@ -30,13 +30,14 @@ export default function CreateBlogPage() {
       }
 
       // 이미 블로그가 있는지 확인
-      const { data: blog } = await supabase
+      const { data: blogs } = await supabase
         .from('blogs')
         .select('id')
         .eq('user_id', user.id)
-        .single()
+        .is('deleted_at', null)
+        .limit(1)
 
-      if (blog) {
+      if (blogs && blogs.length > 0) {
         router.push('/')
         return
       }

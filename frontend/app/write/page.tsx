@@ -77,8 +77,8 @@ function WriteContent() {
     const isEditMode = !!editPostId
     const { showAlert, showConfirm } = useModal()
 
-    // 글로벌 블로그 스토어 사용
-    const { selectedBlog, isLoading: isBlogLoading, fetchBlogs } = useBlogStore()
+    // 블로그 스토어 사용
+    const { selectedBlog: blog, fetchBlogs, isLoading: isBlogLoading } = useBlogStore()
 
     const [user, setUser] = useState<User | null>(null)
     const [title, setTitle] = useState('')
@@ -105,7 +105,7 @@ function WriteContent() {
 
             setUser(user)
 
-            // 블로그 스토어에서 블로그 정보 가져오기
+            // 블로그 스토어에서 블로그 로드
             await fetchBlogs(user.id)
 
             // 수정 모드: 기존 글 데이터 불러오기
@@ -175,6 +175,28 @@ function WriteContent() {
         }
         loadCategories()
     }, [selectedBlog])
+
+    // 블로그 변경 시 카테고리 로드 및 블로그 없으면 리다이렉트
+    useEffect(() => {
+        if (isBlogLoading) return
+
+        // 블로그가 없으면 생성 페이지로
+        if (!blog && user) {
+            router.push('/create-blog')
+            return
+        }
+
+        // 블로그가 있으면 카테고리 로드
+        if (blog) {
+            getCategories(blog.id)
+                .then(categoryData => {
+                    setCategories(categoryData.map(c => ({ id: c.id, name: c.name })))
+                })
+                .catch(err => {
+                    console.error('Failed to load categories:', err)
+                })
+        }
+    }, [blog, isBlogLoading, user, router])
 
     // 에디터에 초기 콘텐츠 설정
     useEffect(() => {
@@ -514,7 +536,7 @@ function WriteContent() {
     }
 
     // 로딩 상태
-    if (loading) {
+    if (loading || isBlogLoading || !blog) {
         return (
             <div className="flex min-h-screen items-center justify-center bg-white dark:bg-black">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-black/20 border-t-black dark:border-white/20 dark:border-t-white" />
