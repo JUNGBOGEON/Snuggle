@@ -1,6 +1,7 @@
+
 import { Router, Request, Response } from 'express'
 import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js'
-import { createAuthenticatedClient, supabase } from '../services/supabase.service.js'
+import { supabase, supabaseAdmin, createAuthenticatedClient } from '../services/supabase.service.js'
 import type { Post, Blog, Category, Profile } from '../types/database.types.js'
 import { logger } from '../utils/logger.js'
 
@@ -43,9 +44,9 @@ router.get('/feed', authMiddleware, async (req: AuthenticatedRequest, res: Respo
     const { data: posts, error: postError } = await supabase
       .from('posts')
       .select(`
-        id, title, content, thumbnail_url, created_at, blog_id, user_id, is_private,
-        blog:blogs ( name, thumbnail_url, user_id )
-      `)
+id, title, content, thumbnail_url, created_at, blog_id, user_id, is_private,
+  blog: blogs(name, thumbnail_url, user_id)
+    `)
       .in('user_id', subscribedUserIds)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -105,9 +106,9 @@ router.get('/popular', async (req: Request, res: Response): Promise<void> => {
     const { data: posts, error } = await supabase
       .from('posts')
       .select(`
-        id, title, content, thumbnail_url, created_at, blog_id, user_id, like_count,
-        blog:blogs ( name, thumbnail_url, user_id )
-      `)
+id, title, content, thumbnail_url, created_at, blog_id, user_id, like_count,
+  blog: blogs(name, thumbnail_url, user_id)
+    `)
       .gt('created_at', today.toISOString()) // 오늘 작성된 글만
       .gt('like_count', 0) // 좋아요 1개 이상만
       .eq('published', true)
@@ -167,9 +168,9 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
     const { data: posts, error } = await supabase
       .from('posts')
       .select(`
-        id, title, content, thumbnail_url, created_at, blog_id, is_private,
-        blog:blogs ( name, thumbnail_url, user_id )
-      `)
+id, title, content, thumbnail_url, created_at, blog_id, is_private,
+  blog: blogs(name, thumbnail_url, user_id)
+    `)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -281,6 +282,10 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     const { data: post, error: postError } = await supabase
       .from('posts')
       .select(`
+    *,
+    blog: blogs(id, user_id, name, thumbnail_url),
+      category: categories(id, name)
+        `)
         *,
         blog:blogs ( id, user_id, name, thumbnail_url, description )
       `)
@@ -324,10 +329,9 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
         const authClient = createAuthenticatedClient(token)
         const { data: { user } } = await authClient.auth.getUser()
 
-        // 작성자이면서 현재 선택된 블로그가 게시글의 블로그와 일치해야 함
+        // 작성자만 접근 가능 (블로그 선택 여부와 무관하게 본인 글이면 접근 허용)
         const isOwner = user?.id === typedPost.user_id
-        const isSameBlog = selectedBlogId === typedPost.blog.id
-        canAccess = isOwner && isSameBlog
+        canAccess = isOwner
       }
 
       if (!canAccess) {
@@ -336,17 +340,9 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    // 조회수 증가 (비동기로 처리, 실패해도 응답에 영향 없음)
-    void (async () => {
-      try {
-        await supabase
-          .from('posts')
-          .update({ view_count: (typedPost.view_count || 0) + 1 })
-          .eq('id', id)
-      } catch {
-        // Ignore errors
-      }
-    })()
+    // 조회수 증가 로직 제거 (별도 API로 분리)
+
+    // 프로필 정보
 
     // 프로필 정보
     const { data: profile } = await supabase
@@ -679,6 +675,41 @@ router.post('/:id/like', authMiddleware, async (req: AuthenticatedRequest, res: 
       details: error.message || error,
       code: error.code
     })
+  }
+})
+
+// 조회수 증가
+router.post('/:id/view', async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params
+
+    // 1. 현재 조회수 가져오기
+    const { data: post, error: fetchError } = await supabaseAdmin
+      .from('posts')
+      .select('view_count')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !post) {
+      res.status(404).json({ error: 'Post not found' })
+      return
+    }
+
+    // 2. 조회수 1 증가
+    // TODO: 쿠키나 IP 기반으로 중복 조회 방지 로직을 추가할 수 있습니다.
+    const newViewCount = (post.view_count || 0) + 1
+
+    const { error: updateError } = await supabaseAdmin
+      .from('posts')
+      .update({ view_count: newViewCount })
+      .eq('id', id)
+
+    if (updateError) throw updateError
+
+    res.json({ success: true, view_count: newViewCount })
+  } catch (error: any) {
+    logger.error('View count increment error:', error)
+    res.status(500).json({ error: 'Failed to increment view count' })
   }
 })
 

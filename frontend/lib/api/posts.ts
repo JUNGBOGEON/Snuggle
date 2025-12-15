@@ -342,5 +342,13 @@ export async function toggleLike(postId: string): Promise<{ success: boolean; is
     throw new Error(errorData.details || errorData.error || 'Failed to toggle like')
   }
 
+
   return response.json()
+}
+
+// 조회수 증가
+export async function incrementViewCount(postId: string): Promise<void> {
+  await fetch(`${API_URL}/api/posts/${postId}/view`, {
+    method: 'POST',
+  })
 }

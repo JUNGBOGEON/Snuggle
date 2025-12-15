@@ -7,6 +7,7 @@ export interface Blog {
     description: string | null
     thumbnail_url: string | null
     user_id?: string
+    total_view_count?: number
 }
 
 const SELECTED_BLOG_KEY = 'snuggle_selected_blog_id'
@@ -67,7 +68,24 @@ export const useBlogStore = create<BlogStore>((set, get) => ({
                 return
             }
 
-            set({ blogs: data })
+            // 각 블로그의 총 조회수 계산
+            const blogsWithStats = await Promise.all(data.map(async (blog) => {
+                const { data: posts } = await supabase
+                    .from('posts')
+                    .select('view_count')
+                    .eq('blog_id', blog.id)
+
+                const totalViewCount = posts
+                    ? posts.reduce((sum, post) => sum + (post.view_count || 0), 0)
+                    : 0
+
+                return {
+                    ...blog,
+                    total_view_count: totalViewCount
+                }
+            }))
+
+            set({ blogs: blogsWithStats })
 
             // localStorage에서 이전 선택 복원
             let savedBlogId: string | null = null
@@ -75,8 +93,8 @@ export const useBlogStore = create<BlogStore>((set, get) => ({
                 savedBlogId = localStorage.getItem(SELECTED_BLOG_KEY)
             }
 
-            const savedBlog = data.find(b => b.id === savedBlogId)
-            const selectedBlog = savedBlog || data[0]
+            const savedBlog = blogsWithStats.find(b => b.id === savedBlogId)
+            const selectedBlog = savedBlog || blogsWithStats[0]
 
             set({ selectedBlog, isLoading: false, hasFetched: true })
 

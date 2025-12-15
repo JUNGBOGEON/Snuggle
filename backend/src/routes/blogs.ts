@@ -12,7 +12,7 @@ router.get('/my', authMiddleware, async (req: AuthenticatedRequest, res: Respons
         const authClient = createAuthenticatedClient(token)
         const userId = req.user!.id
 
-        const { data, error } = await authClient
+        const { data: blogs, error } = await authClient
             .from('blogs')
             .select('id, name, description, thumbnail_url, created_at, updated_at')
             .eq('user_id', userId)
@@ -25,7 +25,30 @@ router.get('/my', authMiddleware, async (req: AuthenticatedRequest, res: Respons
             return
         }
 
-        res.json(data || [])
+        if (!blogs || blogs.length === 0) {
+            res.json([])
+            return
+        }
+
+        // 각 블로그의 총 조회수 계산
+        const blogsWithStats = await Promise.all(blogs.map(async (blog) => {
+            const { data: posts, error: postsError } = await authClient
+                .from('posts')
+                .select('view_count')
+                .eq('blog_id', blog.id)
+
+            let totalViewCount = 0
+            if (posts && !postsError) {
+                totalViewCount = posts.reduce((sum, post) => sum + (post.view_count || 0), 0)
+            }
+
+            return {
+                ...blog,
+                total_view_count: totalViewCount
+            }
+        }))
+
+        res.json(blogsWithStats)
     } catch (error) {
         logger.error('Get my blogs error:', error)
         res.status(500).json({ error: 'Failed to fetch blogs' })
