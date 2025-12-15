@@ -30,6 +30,11 @@ export default function PostPage() {
     const { user } = useUserStore()
     const { showAlert } = useModal()
 
+    // 페이지 진입/변경 시 스크롤 최상단 이동
+    useEffect(() => {
+        window.scrollTo(0, 0)
+    }, [postId])
+
     useEffect(() => {
         const fetchData = async () => {
             // 게시글 정보 (백엔드 API 사용)

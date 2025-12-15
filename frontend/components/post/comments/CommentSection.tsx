@@ -36,9 +36,9 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     const handleCreateComment = async (text: string) => {
         setSubmitting(true)
         try {
-            await createComment(postId, text)
-            // Refresh comments to get the new one with ID and profile
-            await fetchComments()
+            const newComment = await createComment(postId, text)
+            // 백엔드에서 반환된 완성된 댓글 객체(프로필 포함)를 바로 추가
+            setComments(prev => [...prev, newComment])
         } catch (err) {
             console.error(err)
             await showAlert('댓글 작성에 실패했습니다.')
@@ -49,8 +49,8 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
     const handleReply = async (parentId: string, text: string) => {
         try {
-            await createComment(postId, text, parentId)
-            await fetchComments()
+            const newComment = await createComment(postId, text, parentId)
+            setComments(prev => [...prev, newComment])
         } catch (err) {
             throw err // Let Item handle error alert
         }

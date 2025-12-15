@@ -329,7 +329,7 @@ router.get('/:id/comments', async (req: Request, res: Response): Promise<void> =
     )
 
     // Transform to include profile_image_url
-    const result = (data || []).map((comment: { blog: { name: string; thumbnail_url: string | null; user_id: string } | null; [key: string]: unknown }) => ({
+    const result = (data || []).map((comment: { blog: { name: string; thumbnail_url: string | null; user_id: string } | null;[key: string]: unknown }) => ({
       ...comment,
       blog: comment.blog ? {
         name: comment.blog.name,
@@ -368,7 +368,10 @@ router.post('/comments', authMiddleware, async (req: AuthenticatedRequest, res: 
     const { data, error } = await authClient
       .from('forum_comments')
       .insert(insertData)
-      .select()
+      .select(`
+        *,
+        blog:blogs ( name, thumbnail_url, user_id )
+      `)
       .single()
 
     if (error) {
