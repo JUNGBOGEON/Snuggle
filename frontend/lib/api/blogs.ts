@@ -196,3 +196,26 @@ export async function restoreBlog(id: string): Promise<MyBlog> {
 
   return data
 }
+
+// 블로그 방문자 수 조회
+export interface VisitorCount {
+  today: number
+  total: number
+}
+
+export async function getVisitorCount(blogId: string): Promise<VisitorCount> {
+  try {
+    const response = await fetch(`${API_URL}/api/blogs/${blogId}/visitors`, {
+      credentials: 'include', // 쿠키 전송을 위해 필수
+    })
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch visitor count')
+    }
+
+    return response.json()
+  } catch (error) {
+    console.error('Failed to fetch visitor count:', error)
+    return { today: 0, total: 0 }
+  }
+}

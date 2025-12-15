@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "@/components/common/Providers";
 import Header from "@/components/layout/Header";
+import VisitorIdProvider from "@/components/common/VisitorIdProvider";
 
 export const metadata: Metadata = {
   title: "Snuggle",
@@ -29,8 +30,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased" suppressHydrationWarning>
         <Providers>
-          <Header />
-          {children}
+          <VisitorIdProvider>
+            <Header />
+            {children}
+          </VisitorIdProvider>
         </Providers>
       </body>
     </html>
