@@ -34,11 +34,16 @@ export interface PostWithDetails extends Post {
     user_id: string
     name: string
     thumbnail_url: string | null
+    description?: string | null
   }
-  category: {
+  category?: {
     id: string
     name: string
   } | null
+  categories?: {
+    id: string
+    name: string
+  }[]
   profile: {
     id: string
     nickname: string | null
@@ -162,7 +167,6 @@ export async function createPost(data: {
       user_id: user.id,
       title: data.title,
       content: data.content,
-      category_id: data.category_ids?.[0] || null,
       published: data.published ?? true,
       is_private: data.is_private ?? false,
       is_allow_comment: data.is_allow_comment ?? true,
@@ -174,6 +178,22 @@ export async function createPost(data: {
   if (error) {
     console.error('Failed to create post:', error)
     throw new Error(error.message || 'Failed to create post')
+  }
+
+  // 카테고리 연결 (post_categories 테이블에 저장)
+  if (data.category_ids && data.category_ids.length > 0) {
+    const postCategories = data.category_ids.slice(0, 5).map((categoryId) => ({
+      post_id: post.id,
+      category_id: categoryId,
+    }))
+
+    const { error: categoryError } = await supabase
+      .from('post_categories')
+      .insert(postCategories)
+
+    if (categoryError) {
+      console.error('Failed to link categories:', categoryError)
+    }
   }
 
   return post
@@ -206,7 +226,6 @@ export async function updatePost(
 
   if (data.title !== undefined) updateData.title = data.title
   if (data.content !== undefined) updateData.content = data.content
-  if (data.category_ids !== undefined) updateData.category_id = data.category_ids[0] || null
   if (data.published !== undefined) updateData.published = data.published
   if (data.is_private !== undefined) updateData.is_private = data.is_private
   if (data.is_allow_comment !== undefined) updateData.is_allow_comment = data.is_allow_comment
@@ -223,6 +242,31 @@ export async function updatePost(
   if (error) {
     console.error('Failed to update post:', error)
     throw new Error(error.message || 'Failed to update post')
+  }
+
+  // 카테고리 업데이트 (기존 삭제 후 새로 추가)
+  if (data.category_ids !== undefined) {
+    // 기존 카테고리 연결 삭제
+    await supabase
+      .from('post_categories')
+      .delete()
+      .eq('post_id', id)
+
+    // 새 카테고리 연결
+    if (data.category_ids.length > 0) {
+      const postCategories = data.category_ids.slice(0, 5).map((categoryId) => ({
+        post_id: id,
+        category_id: categoryId,
+      }))
+
+      const { error: categoryError } = await supabase
+        .from('post_categories')
+        .insert(postCategories)
+
+      if (categoryError) {
+        console.error('Failed to update categories:', categoryError)
+      }
+    }
   }
 
   return post

@@ -155,10 +155,6 @@ router.delete('/:commentId', authMiddleware, async (req: AuthenticatedRequest, r
         const token = req.headers.authorization!.split(' ')[1]
         const authClient = createAuthenticatedClient(token)
 
-        // 권한 확인은 RLS에 맡길 수도 있지만, 명시적으로 확인하는 것이 안전함.
-        // 하지만 Supabase RLS가 user_id 일치를 검사하도록 설정되어 있다고 가정하면 delete만 호출해도 됨.
-        // 여기서는 안전하게 delete 수행하고 결과 확인.
-
         const { error } = await authClient
             .from('post_comment')
             .delete()
@@ -175,6 +171,57 @@ router.delete('/:commentId', authMiddleware, async (req: AuthenticatedRequest, r
     } catch (error) {
         console.error('Delete comment error:', error)
         res.status(500).json({ error: 'Failed to delete comment' })
+    }
+})
+
+// 댓글 수정
+router.patch('/:commentId', authMiddleware, async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const userId = req.user!.id
+        const { commentId } = req.params
+        const { comment_text } = req.body
+
+        if (!comment_text) {
+            res.status(400).json({ error: 'comment_text is required' })
+            return
+        }
+
+        const token = req.headers.authorization!.split(' ')[1]
+        const authClient = createAuthenticatedClient(token)
+
+        const { data, error } = await authClient
+            .from('post_comment')
+            .update({
+                comment_text,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', commentId)
+            .eq('user_id', userId) // 본인 댓글만 수정 가능
+            .select(`
+                *,
+                profiles:user_id (
+                    id,
+                    nickname,
+                    profile_image_url
+                ),
+                blog:blog_id (
+                    id,
+                    name,
+                    thumbnail_url
+                )
+            `)
+            .single()
+
+        if (error) {
+            console.error('Update comment error:', error)
+            res.status(500).json({ error: 'Failed to update comment' })
+            return
+        }
+
+        res.json(data)
+    } catch (error) {
+        console.error('Update comment error:', error)
+        res.status(500).json({ error: 'Failed to update comment' })
     }
 })
 

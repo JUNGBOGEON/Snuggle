@@ -17,6 +17,7 @@ export interface Comment {
     blog_id: string | null
     comment_text: string
     created_at: string
+    updated_at: string | null
     parent_id: string | null
     profiles: {
         id: string
@@ -27,6 +28,13 @@ export interface Comment {
         id: string
         name: string
         thumbnail_url: string | null
+    } | null
+    // 대댓글의 부모 댓글 정보 (멘션용)
+    parent_comment?: {
+        id: string
+        user_id: string
+        blog_name: string | null
+        profile_nickname: string | null
     } | null
 }
 
@@ -103,4 +111,30 @@ export async function deleteComment(commentId: string): Promise<void> {
     if (!response.ok) {
         throw new Error('댓글 삭제에 실패했습니다')
     }
+}
+
+// 댓글 수정
+export async function updateComment(commentId: string, text: string): Promise<Comment> {
+    const token = await getAuthToken()
+
+    if (!token) {
+        throw new Error('로그인이 필요합니다')
+    }
+
+    const response = await fetch(`${API_URL}/api/comments/${commentId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+            comment_text: text,
+        }),
+    })
+
+    if (!response.ok) {
+        throw new Error('댓글 수정에 실패했습니다')
+    }
+
+    return response.json()
 }
