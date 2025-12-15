@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { getPost, PostWithDetails } from '@/lib/api/posts'
+import { getPost, incrementViewCount, PostWithDetails } from '@/lib/api/posts'
 import { createClient } from '@/lib/supabase/client'
 import hljs from 'highlight.js'
 import BlogSkinProvider from '@/components/blog/BlogSkinProvider'
@@ -72,6 +72,15 @@ export default function PostPage() {
 
         fetchData()
     }, [postId, selectedBlog?.id])
+
+    // 조회수 증가 (마운트 시 1회만 실행 - StrictMode 중복 방지)
+    const viewCountRef = useRef(false)
+    useEffect(() => {
+        if (viewCountRef.current) return
+        viewCountRef.current = true
+
+        incrementViewCount(postId).catch(err => console.error('View count error:', err))
+    }, [postId])
 
     // 코드블록 하이라이팅 적용
     useEffect(() => {
