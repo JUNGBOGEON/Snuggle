@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { getBlogImageUrl } from '@/lib/utils/image'
 
 interface PostCardProps {
@@ -48,7 +49,7 @@ export default function PostCard({ post }: PostCardProps) {
   })
 
   return (
-    <a href={`/post/${post.id}`} className="block">
+    <Link href={`/post/${post.id}`} className="block">
       <article className="h-40 border-b border-black/10 py-6 transition-colors hover:bg-black/[0.02] dark:border-white/10 dark:hover:bg-white/[0.02]">
         <div className="flex h-full gap-4">
           {/* 썸네일 */}
@@ -91,6 +92,6 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
         </div>
       </article>
-    </a>
+    </Link>
   )
 }

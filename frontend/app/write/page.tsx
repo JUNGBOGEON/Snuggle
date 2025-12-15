@@ -115,7 +115,9 @@ function WriteContent() {
                         }
                         setTitle(postData.title)
                         setInitialContent(postData.content)
-                        setCategoryIds(postData.category ? [postData.category.id] : [])
+                        // 다중 카테고리 지원: categories 배열 사용, 없으면 기존 category 사용
+                        const catIds = postData.categories?.map(c => c.id) || (postData.category ? [postData.category.id] : [])
+                        setCategoryIds(catIds)
 
                         // 기존 이미지들도 추적 대상에 추가
                         const existingImages = extractImageUrls(postData.content)

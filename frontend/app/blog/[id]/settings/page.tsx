@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { uploadImage } from '@/lib/api/upload'
@@ -718,12 +719,12 @@ export default function BlogSettingsPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <a
+                          <Link
                             href={`/post/${post.id}`}
                             className="truncate font-medium text-black hover:underline dark:text-white"
                           >
                             {post.title}
-                          </a>
+                          </Link>
                           {post.is_private && (
                             <span className="shrink-0 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-gray-800 dark:text-gray-300">
                               비공개

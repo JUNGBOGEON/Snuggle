@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useUserStore } from '@/lib/store/useUserStore'
 import { useBlogStore } from '@/lib/store/useBlogStore'
 import { useModal } from '@/components/common/Modal'
@@ -10,24 +10,44 @@ const MAX_LENGTH = 500
 interface CommentFormProps {
     onSubmit: (text: string) => Promise<void>
     placeholder?: string
-    buttonLabel?: string
     loading?: boolean
     autoFocus?: boolean
     onCancel?: () => void
+    isReply?: boolean
 }
 
 export default function CommentForm({
     onSubmit,
-    placeholder = '내용을 입력하세요.',
-    buttonLabel = '등록',
+    placeholder = '댓글 추가...',
     loading = false,
     autoFocus = false,
-    onCancel
+    onCancel,
+    isReply = false
 }: CommentFormProps) {
     const { user } = useUserStore()
-    const { selectedBlog, isLoading: isBlogLoading, hasFetched } = useBlogStore()
+    const { selectedBlog } = useBlogStore()
     const { showAlert } = useModal()
     const [text, setText] = useState('')
+    const [isFocused, setIsFocused] = useState(autoFocus)
+    const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+    const kakaoProfileImage = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
+    const profileImage = selectedBlog?.thumbnail_url || kakaoProfileImage
+    const displayName = selectedBlog?.name || user?.user_metadata?.name || ''
+
+    useEffect(() => {
+        if (autoFocus && textareaRef.current) {
+            textareaRef.current.focus()
+            setIsFocused(true)
+        }
+    }, [autoFocus])
+
+    const adjustHeight = () => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
+            textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px'
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -40,89 +60,104 @@ export default function CommentForm({
 
         await onSubmit(text)
         setText('')
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        // Shift + Enter for new line, Enter to submit
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSubmit(e)
+        if (!isReply) {
+            setIsFocused(false)
+        }
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
         }
     }
 
-    // 선택된 블로그 정보 사용, 프로필 이미지는 블로그 썸네일 -> 카카오 프로필 순서로 폴백
-    const displayName = selectedBlog?.name || ''
-    const kakaoProfileImage = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
-    const profileImage = selectedBlog?.thumbnail_url || kakaoProfileImage
+    const handleCancel = () => {
+        setText('')
+        setIsFocused(false)
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto'
+        }
+        onCancel?.()
+    }
 
-    // 블로그가 로딩 중이거나 아직 fetch하지 않았으면 로딩 상태로 표시
-    const showSkeleton = isBlogLoading || (user && !hasFetched)
+    if (!user) {
+        return (
+            <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-black/[0.02] px-4 py-3 dark:border-white/10 dark:bg-white/[0.02]">
+                <div className={`${isReply ? 'h-7 w-7' : 'h-9 w-9'} shrink-0 rounded-full bg-black/10 dark:bg-white/10`} />
+                <span className="text-sm text-black/50 dark:text-white/50">
+                    로그인 후 댓글을 작성할 수 있습니다.
+                </span>
+            </div>
+        )
+    }
 
     return (
-        <form onSubmit={handleSubmit} className="relative">
-            {!user ? (
-                <div className="flex h-24 w-full items-center justify-center rounded-lg border border-[var(--blog-border)] bg-[var(--blog-card-bg)] text-[var(--blog-muted)]">
-                    로그인 후 댓글을 작성할 수 있습니다.
-                </div>
-            ) : (
-                <div className="rounded-lg border border-[var(--blog-border)] bg-[var(--blog-card-bg)] p-4 focus-within:ring-1 focus-within:ring-[var(--blog-fg)]">
-                    <div className="mb-2 flex items-center gap-2">
-                        {showSkeleton ? (
-                            <>
-                                <div className="h-6 w-6 rounded-full bg-[var(--blog-fg)]/10 animate-pulse" />
-                                <div className="h-4 w-16 rounded bg-[var(--blog-fg)]/10 animate-pulse" />
-                            </>
-                        ) : (
-                            <>
-                                {profileImage ? (
-                                    <img src={profileImage} alt={displayName} className="h-6 w-6 rounded-full object-cover" />
-                                ) : (
-                                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--blog-fg)]/10 text-xs font-bold text-[var(--blog-muted)]">
-                                        {(displayName || 'U').charAt(0)}
-                                    </div>
-                                )}
-                                <span className="text-sm font-bold text-[var(--blog-fg)]">{displayName}</span>
-                            </>
-                        )}
-                    </div>
-                    <textarea
-                        value={text}
-                        onChange={(e) => setText(e.target.value.slice(0, MAX_LENGTH))}
-                        onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
-                        className="w-full resize-none bg-transparent text-sm text-[var(--blog-fg)] placeholder-[var(--blog-muted)] outline-none"
-                        rows={3}
-                        autoFocus={autoFocus}
-                        maxLength={MAX_LENGTH}
-                    />
-                    <div className="mt-2 flex items-center justify-between">
-                        <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-[var(--blog-muted)]'}`}>
-                            {text.length}/{MAX_LENGTH}
-                        </span>
-                        <div className="flex items-center gap-2">
-                        {onCancel && (
-                            <button
-                                type="button"
-                                onClick={onCancel}
-                                className="rounded px-3 py-1.5 text-xs text-[var(--blog-muted)] hover:text-[var(--blog-fg)]"
-                            >
-                                취소
-                            </button>
-                        )}
-                            <button
-                                type="submit"
-                                disabled={!text.trim() || loading}
-                                className={`rounded px-4 py-1.5 text-xs font-bold transition-colors ${text.trim() && !loading
-                                    ? 'bg-[var(--blog-fg)] text-[var(--blog-bg)] hover:opacity-90'
-                                    : 'cursor-not-allowed bg-[var(--blog-border)] text-[var(--blog-muted)]'
-                                    }`}
-                            >
-                                {loading ? '등록 중...' : buttonLabel}
-                            </button>
+        <form onSubmit={handleSubmit}>
+            <div className="flex gap-3">
+                {/* 프로필 이미지 */}
+                <div className={`${isReply ? 'h-7 w-7' : 'h-9 w-9'} shrink-0`}>
+                    {profileImage ? (
+                        <img
+                            src={profileImage}
+                            alt={displayName}
+                            className="h-full w-full rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="flex h-full w-full items-center justify-center rounded-full bg-black/10 text-xs font-medium text-black/50 dark:bg-white/10 dark:text-white/50">
+                            {(displayName || 'U').charAt(0).toUpperCase()}
                         </div>
-                    </div>
+                    )}
                 </div>
-            )}
+
+                {/* 입력 영역 */}
+                <div className="min-w-0 flex-1">
+                    <div className={`overflow-hidden rounded-xl border transition-colors ${
+                        isFocused
+                            ? 'border-black/20 bg-white dark:border-white/20 dark:bg-neutral-900'
+                            : 'border-black/10 bg-black/[0.02] dark:border-white/10 dark:bg-white/[0.02]'
+                    }`}>
+                        <textarea
+                            ref={textareaRef}
+                            value={text}
+                            onChange={(e) => {
+                                setText(e.target.value.slice(0, MAX_LENGTH))
+                                adjustHeight()
+                            }}
+                            onFocus={() => setIsFocused(true)}
+                            placeholder={placeholder}
+                            className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-black outline-none placeholder:text-black/40 dark:text-white dark:placeholder:text-white/40"
+                            rows={1}
+                            maxLength={MAX_LENGTH}
+                        />
+                    </div>
+
+                    {/* 버튼 영역 */}
+                    {isFocused && (
+                        <div className="mt-3 flex items-center justify-between">
+                            <span className={`text-xs ${text.length >= MAX_LENGTH ? 'text-red-500' : 'text-black/40 dark:text-white/40'}`}>
+                                {text.length}/{MAX_LENGTH}
+                            </span>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleCancel}
+                                    className="rounded-lg px-4 py-2 text-sm font-medium text-black/70 transition-colors hover:bg-black/5 dark:text-white/70 dark:hover:bg-white/5"
+                                >
+                                    취소
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={!text.trim() || loading}
+                                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                                        text.trim() && !loading
+                                            ? 'bg-black text-white hover:bg-black/90 dark:bg-white dark:text-black dark:hover:bg-white/90'
+                                            : 'cursor-not-allowed bg-black/10 text-black/30 dark:bg-white/10 dark:text-white/30'
+                                    }`}
+                                >
+                                    {loading ? '등록 중...' : isReply ? '답글' : '댓글'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
         </form>
     )
 }

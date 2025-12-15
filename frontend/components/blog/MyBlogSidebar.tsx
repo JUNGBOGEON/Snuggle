@@ -172,6 +172,32 @@ export default function MyBlogSidebar() {
             관리
           </a>
         </div>
+
+        {/* 통계 */}
+        <div className="mt-6 flex flex-col gap-2 border-t border-black/10 pt-6 dark:border-white/10">
+          <div className="flex cursor-default items-center justify-between py-1">
+            <span className="text-sm text-black dark:text-white">조회수</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-semibold text-black dark:text-white">
+                {selectedBlog.total_view_count?.toLocaleString() || 0}회
+              </span>
+              <svg className="h-4 w-4 text-black/30 dark:text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex cursor-default items-center justify-between py-1">
+            <span className="text-sm text-black dark:text-white">방문자</span>
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-semibold text-black dark:text-white">
+                0명
+              </span>
+              <svg className="h-4 w-4 text-black/30 dark:text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }

@@ -28,6 +28,7 @@ export interface ForumPost {
     description: string
     user_id: string
     blog_id: string
+    category?: string
     created_at: string
     updated_at: string
     blog: {

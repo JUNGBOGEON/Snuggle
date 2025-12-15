@@ -173,6 +173,21 @@ router.post('/', authMiddleware, async (req: AuthenticatedRequest, res: Response
     const user = req.user!
     const { title, description, blog_id, category, category_id } = req.body
 
+    // 하루 3개 제한 체크
+    const { data: countData, error: countError } = await supabase
+      .rpc('get_user_forum_count_today', { p_user_id: user.id })
+
+    if (countError) {
+      logger.error('Check forum limit error:', countError)
+      res.status(500).json({ error: 'Failed to check forum limit' })
+      return
+    }
+
+    if (countData >= 3) {
+      res.status(429).json({ error: '하루에 3개까지만 작성할 수 있습니다.' })
+      return
+    }
+
     // category_id가 있으면 사용, 없으면 기존 title prefix 방식 (하위 호환성)
     let finalTitle = title
     if (!category_id && category) {

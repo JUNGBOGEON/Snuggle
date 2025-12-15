@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { getBlogImageUrl } from '@/lib/utils/image'
 
 interface FeedItemProps {
@@ -43,7 +44,7 @@ export default function FeedItem({ post }: FeedItemProps) {
     })
 
     return (
-        <a href={`/post/${post.id}`} className="block">
+        <Link href={`/post/${post.id}`} className="block">
             <article className="border-b border-black/10 py-6 transition-colors hover:bg-black/[0.02] dark:border-white/10 dark:hover:bg-white/[0.02]">
                 <div className="flex gap-4">
                     {/* 썸네일 */}
@@ -84,6 +85,6 @@ export default function FeedItem({ post }: FeedItemProps) {
                     </div>
                 </div>
             </article>
-        </a>
+        </Link>
     )
 }

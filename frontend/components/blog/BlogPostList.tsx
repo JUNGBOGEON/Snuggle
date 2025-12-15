@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { getBlogPosts, Post } from '@/lib/api/posts'
 
 interface BlogPostListProps {
@@ -76,12 +77,12 @@ export default function BlogPostList({ blogId, isOwner }: BlogPostListProps) {
           아직 작성된 글이 없습니다
         </p>
         {isOwner && (
-          <a
+          <Link
             href="/write"
             className="mt-4 rounded-full bg-[var(--blog-accent)] px-6 py-2.5 text-sm font-medium text-[var(--blog-bg)]"
           >
             첫 글 작성하기
-          </a>
+          </Link>
         )}
       </div>
     )
@@ -100,7 +101,7 @@ export default function BlogPostList({ blogId, isOwner }: BlogPostListProps) {
 
       <div className="divide-y divide-[var(--blog-border)] border-t border-[var(--blog-border)]">
         {posts.map((post) => (
-          <a
+          <Link
             key={post.id}
             href={`/post/${post.id}`}
             className="group block py-5 transition-colors hover:bg-[var(--blog-fg)]/[0.02]"
@@ -128,7 +129,7 @@ export default function BlogPostList({ blogId, isOwner }: BlogPostListProps) {
                 />
               )}
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </div>

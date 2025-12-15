@@ -14,3 +14,11 @@ export function createAuthenticatedClient(accessToken: string): SupabaseClient {
 
 // 기본 Supabase 클라이언트 (익명)
 export const supabase = createClient(env.supabase.url, env.supabase.anonKey)
+
+// 관리자 권한 Supabase 클라이언트 (Service Role)
+export const supabaseAdmin = createClient(env.supabase.url, env.supabase.serviceRoleKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
