@@ -61,14 +61,16 @@ export default function Header() {
         return () => window.removeEventListener('resize', updatePill)
     }, [isSkinsPage, isMarketplacePage, isInitialized])
 
-    // Hide header on blog pages, post pages, management pages, and write page
+    // Hide header on blog pages, post pages, management pages, write page, and search page
     // Blog and post pages use BlogHeader with blog-specific themes
+    // Search page uses its own SearchHeader
     if (
         pathname.includes('/manage') ||
         pathname.includes('/setting') ||
         pathname === '/write' ||
         pathname.startsWith('/blog/') ||
-        pathname.startsWith('/post/')
+        pathname.startsWith('/post/') ||
+        pathname.startsWith('/search')
     ) {
         return null
     }
