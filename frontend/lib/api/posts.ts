@@ -276,6 +276,10 @@ export async function getPopularPosts(): Promise<PostListItem[]> {
   if (!response.ok) {
     throw new Error('Failed to fetch popular posts')
   }
+
+  return response.json()
+}
+
 // 좋아요 토글
 export async function toggleLike(postId: string): Promise<{ success: boolean; is_liked: boolean; like_count: number }> {
   const token = await getAuthToken()
@@ -293,10 +297,6 @@ export async function toggleLike(postId: string): Promise<{ success: boolean; is
     console.error('Like toggle failed:', errorData)
     throw new Error(errorData.details || errorData.error || 'Failed to toggle like')
   }
-
-  return response.json()
-}
-
 
   return response.json()
 }
