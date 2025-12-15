@@ -86,7 +86,10 @@ export async function getBlogPosts(blogId: string, showAll = false): Promise<Pos
 
   const response = await fetch(
     `${API_URL}/api/posts/blog/${blogId}?showAll=${showAll}`,
-    { headers }
+    {
+      headers,
+      credentials: 'include', // 방문자 쿠키 전송을 위해 필수
+    }
   )
 
   if (!response.ok) {
@@ -109,7 +112,10 @@ export async function getPost(id: string, selectedBlogId?: string): Promise<Post
     ? `${API_URL}/api/posts/${id}?selectedBlogId=${selectedBlogId}`
     : `${API_URL}/api/posts/${id}`
 
-  const response = await fetch(url, { headers })
+  const response = await fetch(url, {
+    headers,
+    credentials: 'include', // 방문자 쿠키 전송을 위해 필수
+  })
   if (response.status === 403) {
     throw new Error('Private')
   }

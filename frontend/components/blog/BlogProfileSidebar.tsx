@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import SubscriptionButton from '@/components/common/SubscriptionButton'
 import { createClient } from '@/lib/supabase/client'
+import { getVisitorCount } from '@/lib/api/blogs'
 
 interface Blog {
   id: string
@@ -26,6 +27,7 @@ export default function BlogProfileSidebar({
 }: BlogProfileSidebarProps) {
   const [imageUrl, setImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [visitorCount, setVisitorCount] = useState(0)
 
   // 프로필 이미지 가져오기 (thumbnail_url 우선, 없으면 profile_image_url)
   useEffect(() => {
@@ -55,6 +57,13 @@ export default function BlogProfileSidebar({
 
     fetchImage()
   }, [blog.thumbnail_url, blog.user_id])
+
+  // 방문자 수 가져오기
+  useEffect(() => {
+    getVisitorCount(blog.id).then(data => {
+      setVisitorCount(data.today)
+    })
+  }, [blog.id])
 
   const createdDate = new Date(blog.created_at).toLocaleDateString('ko-KR', {
     year: 'numeric',
@@ -112,6 +121,10 @@ export default function BlogProfileSidebar({
           <div className="text-center">
             <p className="text-2xl font-bold text-[var(--blog-fg)]">0</p>
             <p className="text-xs text-[var(--blog-muted)]">구독자</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-[var(--blog-fg)]">{visitorCount}</p>
+            <p className="text-xs text-[var(--blog-muted)]">방문자</p>
           </div>
         </div>
 
