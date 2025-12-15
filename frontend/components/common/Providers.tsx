@@ -8,7 +8,7 @@ import ThemeProvider from './ThemeProvider'
 import { ModalProvider } from './Modal'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const { setUser } = useUserStore()
+  const { setUser, setLoading } = useUserStore()
 
   useEffect(() => {
     const supabase = createClient()
@@ -17,6 +17,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       setUser(user)
+      setLoading(false)
       if (user) syncProfile()
     }
     checkUser()
@@ -32,7 +33,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     )
 
     return () => subscription.unsubscribe()
-  }, [setUser])
+  }, [setUser, setLoading])
 
   return (
     <ThemeProvider>

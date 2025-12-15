@@ -15,8 +15,9 @@ const ThemeToggle = dynamic(() => import('@/components/common/ThemeToggle'), {
 
 export default function Header() {
     const pathname = usePathname()
-    const { user } = useUserStore()
+    const { user, isLoading } = useUserStore()
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
+    const [isMounted, setIsMounted] = useState(false)
 
     // Refs for tab pill animation
     const tabContainerRef = useRef<HTMLDivElement>(null)
@@ -24,6 +25,11 @@ export default function Header() {
     const marketplaceTabRef = useRef<HTMLAnchorElement>(null)
     const [pillStyle, setPillStyle] = useState({ transform: 'translateX(0)', width: 0 })
     const [isInitialized, setIsInitialized] = useState(false)
+
+    // Track client mount
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const isMainPage = pathname === '/'
     const isForumPage = pathname.startsWith('/forum')
@@ -180,7 +186,9 @@ export default function Header() {
 
                         {/* User Menu / Login - Main Page Only */}
                         {isMainPage && (
-                            user ? (
+                            (!isMounted || isLoading) ? (
+                                <div className="h-9 w-20 rounded-full bg-black/10 dark:bg-white/10" />
+                            ) : user ? (
                                 <UserMenu />
                             ) : (
                                 <button
