@@ -12,6 +12,7 @@ import subscribeRouter from './routes/subscribe.js'
 import forumRouter from './routes/forum.js'
 import commentsRouter from './routes/comments.js'
 import { startCleanupScheduler } from './services/scheduler.service.js'
+import { startVisitorSyncScheduler } from './scheduler/visitorSync.js'
 import { logger } from './utils/logger.js'
 
 const app = express()
@@ -47,4 +48,7 @@ app.listen(env.port, () => {
 
   // 임시 파일 정리 스케줄러 시작 (6시간마다 실행, 24시간 이상 된 파일 삭제)
   startCleanupScheduler(6, 24)
+
+  // 방문자 수 동기화 스케줄러 시작
+  startVisitorSyncScheduler()
 })

@@ -3,6 +3,8 @@ import { AuthenticatedRequest, authMiddleware } from '../middleware/auth.js'
 import { createAuthenticatedClient, supabase } from '../services/supabase.service.js'
 import type { Post, Blog, Category, Profile } from '../types/database.types.js'
 import { logger } from '../utils/logger.js'
+import { blogVisitorMiddleware } from '../middleware/visitor.js'
+import { trackVisitor, getVisitorId } from '../utils/visitor.js'
 
 const router = Router()
 
@@ -221,7 +223,7 @@ router.get('/', async (req: Request, res: Response): Promise<void> => {
 })
 
 // 블로그별 게시글 목록
-router.get('/blog/:blogId', async (req: Request, res: Response): Promise<void> => {
+router.get('/blog/:blogId', blogVisitorMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { blogId } = req.params
     const showAll = req.query.showAll === 'true'
@@ -326,12 +328,21 @@ router.get('/:id', async (req: Request, res: Response): Promise<void> => {
     }
 
     // 조회수 증가 (비동기로 처리, 실패해도 응답에 영향 없음)
+    // 조회수 증가 (비동기로 처리, 실패해도 응답에 영향 없음)
     void (async () => {
       try {
         await supabase
           .from('posts')
           .update({ view_count: (typedPost.view_count || 0) + 1 })
           .eq('id', id)
+
+        // 방문자 수 집계 (블로그 방문)
+        if (typedPost.blog_id) {
+          const cookies = req.headers.cookie
+          const ip = req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown'
+          const visitorId = getVisitorId(cookies, ip)
+          await trackVisitor(typedPost.blog_id, visitorId)
+        }
       } catch {
         // Ignore errors
       }
