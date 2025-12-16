@@ -54,8 +54,9 @@ export function startVisitorSyncScheduler() {
 
                     logger.info(`[Sync] Updated blog ${blogId} visitor count: ${blog?.visitor_count || 0} -> ${newCount} (+${count})`)
 
-                    // 4. Redis 차감 (DB 업데이트 성공 후)
-                    await redis.decrby(key, count)
+                    // 4. Redis 키 삭제 (DB 업데이트 성공 후)
+                    // decrby 대신 del 사용: 동시성 이슈로 음수가 되는 것을 방지
+                    await redis.del(key)
                 }
             }
         } catch (error) {
