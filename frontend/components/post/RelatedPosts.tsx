@@ -16,42 +16,48 @@ export default function RelatedPosts({ prevPost, nextPost }: RelatedPostsProps) 
     if (!prevPost && !nextPost) return null
 
     return (
-        <div className="mt-12 overflow-hidden rounded-xl border border-[var(--blog-border)]">
-            {/* 다음 글 (최신) */}
-            {nextPost && (
-                <Link
-                    href={`/post/${nextPost.id}`}
-                    className="flex items-center gap-4 border-b border-[var(--blog-border)] px-6 py-4 transition-colors hover:bg-[var(--blog-fg)]/5"
-                >
-                    <span className="shrink-0 text-sm font-medium text-[var(--blog-muted)]">
-                        다음 글
-                    </span>
-                    <svg className="h-4 w-4 shrink-0 text-[var(--blog-fg)]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                    <span className="flex-1 truncate text-sm font-medium text-[var(--blog-fg)]">
-                        {nextPost.title}
-                    </span>
-                </Link>
-            )}
+        <div className="mt-10 grid gap-3 sm:grid-cols-2">
+            {/* 이전 글 */}
+            <div>
+                {prevPost ? (
+                    <Link
+                        href={`/post/${prevPost.id}`}
+                        className="group flex h-full flex-col rounded-xl border border-[var(--blog-border)] p-5 transition-colors hover:bg-[var(--blog-fg)]/[0.02]"
+                    >
+                        <span className="text-xs font-medium text-[var(--blog-muted)]">
+                            이전 글
+                        </span>
+                        <span className="mt-2 line-clamp-2 text-sm font-medium text-[var(--blog-fg)] group-hover:underline">
+                            {prevPost.title}
+                        </span>
+                    </Link>
+                ) : (
+                    <div className="h-full rounded-xl border border-dashed border-[var(--blog-border)] p-5 opacity-50">
+                        <span className="text-xs text-[var(--blog-muted)]">이전 글이 없습니다</span>
+                    </div>
+                )}
+            </div>
 
-            {/* 이전 글 (과거) */}
-            {prevPost && (
-                <Link
-                    href={`/post/${prevPost.id}`}
-                    className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-[var(--blog-fg)]/5"
-                >
-                    <span className="shrink-0 text-sm font-medium text-[var(--blog-muted)]">
-                        이전 글
-                    </span>
-                    <svg className="h-4 w-4 shrink-0 text-[var(--blog-fg)]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                    <span className="flex-1 truncate text-sm font-medium text-[var(--blog-fg)]">
-                        {prevPost.title}
-                    </span>
-                </Link>
-            )}
+            {/* 다음 글 */}
+            <div>
+                {nextPost ? (
+                    <Link
+                        href={`/post/${nextPost.id}`}
+                        className="group flex h-full flex-col items-end rounded-xl border border-[var(--blog-border)] p-5 text-right transition-colors hover:bg-[var(--blog-fg)]/[0.02]"
+                    >
+                        <span className="text-xs font-medium text-[var(--blog-muted)]">
+                            다음 글
+                        </span>
+                        <span className="mt-2 line-clamp-2 text-sm font-medium text-[var(--blog-fg)] group-hover:underline">
+                            {nextPost.title}
+                        </span>
+                    </Link>
+                ) : (
+                    <div className="flex h-full flex-col items-end rounded-xl border border-dashed border-[var(--blog-border)] p-5 opacity-50">
+                        <span className="text-xs text-[var(--blog-muted)]">다음 글이 없습니다</span>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

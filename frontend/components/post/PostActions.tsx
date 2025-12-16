@@ -58,18 +58,18 @@ export default function PostActions({
     }
 
     return (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-3">
             {/* 좋아요 버튼 */}
             <button
                 onClick={handleLike}
-                className={`flex items-center gap-2 rounded-full border px-5 py-2.5 text-sm font-medium transition-all ${
+                className={`group flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium transition-all ${
                     isLiked
-                        ? 'border-red-500 bg-red-50 text-red-500 dark:bg-red-500/10'
-                        : 'border-[var(--blog-border)] bg-[var(--blog-card-bg)] text-[var(--blog-fg)]/70 hover:border-[var(--blog-fg)]/20 hover:bg-[var(--blog-fg)]/5'
+                        ? 'bg-red-500/10 text-red-500'
+                        : 'bg-[var(--blog-fg)]/5 text-[var(--blog-fg)]/60 hover:bg-[var(--blog-fg)]/10 hover:text-[var(--blog-fg)]'
                 }`}
             >
                 <svg
-                    className={`h-5 w-5 ${isLiked ? 'fill-current' : 'fill-none'}`}
+                    className={`h-[18px] w-[18px] transition-transform group-active:scale-125 ${isLiked ? 'fill-current' : 'fill-none'}`}
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                 >
@@ -80,15 +80,16 @@ export default function PostActions({
                         d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
                     />
                 </svg>
-                공감 {likeCount > 0 && <span>{likeCount}</span>}
+                <span>공감</span>
+                {likeCount > 0 && <span className="tabular-nums">{likeCount}</span>}
             </button>
 
             {/* 공유 버튼 */}
             <button
                 onClick={handleShare}
-                className="flex items-center gap-2 rounded-full border border-[var(--blog-border)] bg-[var(--blog-card-bg)] px-5 py-2.5 text-sm font-medium text-[var(--blog-fg)]/70 transition-all hover:border-[var(--blog-fg)]/20 hover:bg-[var(--blog-fg)]/5"
+                className="flex items-center gap-2 rounded-full bg-[var(--blog-fg)]/5 px-5 py-2.5 text-sm font-medium text-[var(--blog-fg)]/60 transition-all hover:bg-[var(--blog-fg)]/10 hover:text-[var(--blog-fg)]"
             >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -96,7 +97,7 @@ export default function PostActions({
                         d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
                     />
                 </svg>
-                공유
+                <span>공유</span>
             </button>
         </div>
     )
