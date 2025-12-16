@@ -369,26 +369,38 @@ export default function SkinsPage() {
                   >
                     {/* 블로그 헤더 */}
                     <header
-                      className="shrink-0 border-b px-5 py-3"
+                      className="relative shrink-0 border-b"
                       style={{ borderColor: cssVars['--blog-border'] }}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-semibold">{userBlog?.name || '내 블로그'}</span>
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-sm"
-                            style={{ color: cssVars['--blog-muted'] }}
-                          >
-                            홈
+                      <div className="relative flex h-12 items-center justify-between px-5">
+                        {/* 로고 + 블로그명 */}
+                        <div className="flex items-center gap-3">
+                          <span className="text-base font-bold" style={{ color: cssVars['--blog-fg'] }}>
+                            Snuggle
                           </span>
+                          <span className="text-sm" style={{ color: cssVars['--blog-muted'] }}>/</span>
+                          <span className="text-sm font-medium" style={{ color: cssVars['--blog-fg'] }}>
+                            {userBlog?.name || '내 블로그'}
+                          </span>
+                        </div>
+
+                        {/* 네비게이션 - 중앙 */}
+                        <nav className="absolute left-1/2 flex -translate-x-1/2 items-center gap-5">
+                          <span className="text-xs font-bold" style={{ color: cssVars['--blog-fg'] }}>홈</span>
+                          <span className="text-xs font-medium" style={{ color: cssVars['--blog-muted'] }}>피드</span>
+                          <span className="text-xs font-medium" style={{ color: cssVars['--blog-muted'] }}>스킨</span>
+                        </nav>
+
+                        {/* 오른쪽 액션 */}
+                        <div className="flex items-center gap-2">
                           <button
-                            className="rounded-md px-2.5 py-1 text-sm font-medium"
+                            className="rounded-full px-3 py-1.5 text-xs font-medium"
                             style={{
                               backgroundColor: cssVars['--blog-accent'],
                               color: cssVars['--blog-bg'],
                             }}
                           >
-                            글쓰기
+                            시작하기
                           </button>
                         </div>
                       </div>
@@ -405,6 +417,8 @@ export default function SkinsPage() {
                           blogDescription={userBlog?.description}
                           displayImage={displayImage}
                           postCount={blogPosts.length}
+                          subscriberCount={12}
+                          visitorCount={48}
                         />
                       }
                     >
