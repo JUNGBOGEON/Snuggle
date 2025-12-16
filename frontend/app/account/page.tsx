@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { getMyBlogs, getDeletedBlogs, createBlog, deleteBlog, restoreBlog } from '@/lib/api/blogs'
 import type { MyBlog, DeletedBlog } from '@/lib/api/blogs'
+import { deleteAccount } from '@/lib/api/profile'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
@@ -18,6 +19,11 @@ export default function AccountPage() {
     const [newBlogDescription, setNewBlogDescription] = useState('')
     const [createLoading, setCreateLoading] = useState(false)
     const [error, setError] = useState('')
+
+    // 계정 탈퇴 관련 상태
+    const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false)
+    const [deleteConfirmText, setDeleteConfirmText] = useState('')
+    const [deleteAccountLoading, setDeleteAccountLoading] = useState(false)
 
     useEffect(() => {
         const checkAuth = async () => {
@@ -95,6 +101,28 @@ export default function AccountPage() {
             await loadBlogs()
         } catch (err) {
             alert(err instanceof Error ? err.message : '블로그 복구에 실패했습니다')
+        }
+    }
+
+    const handleDeleteAccount = async () => {
+        if (deleteConfirmText !== '탈퇴합니다') {
+            return
+        }
+
+        try {
+            setDeleteAccountLoading(true)
+            await deleteAccount()
+
+            // 로그아웃 처리
+            const supabase = createClient()
+            await supabase.auth.signOut()
+
+            // 홈으로 리다이렉트
+            router.push('/')
+        } catch (err) {
+            alert(err instanceof Error ? err.message : '계정 탈퇴에 실패했습니다')
+        } finally {
+            setDeleteAccountLoading(false)
         }
     }
 
@@ -234,6 +262,31 @@ export default function AccountPage() {
                         </div>
                     </section>
                 )}
+
+                {/* Danger Zone - Account Deletion */}
+                <section className="mt-16 rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-500/20 dark:bg-red-500/10">
+                    <h2 className="flex items-center gap-2 text-lg font-semibold text-red-600 dark:text-red-400">
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                        위험 구역
+                    </h2>
+
+                    <div className="mt-4">
+                        <h3 className="font-medium text-red-700 dark:text-red-300">계정 탈퇴</h3>
+                        <p className="mt-1 text-sm text-red-600/80 dark:text-red-400/80">
+                            계정을 탈퇴하면 모든 블로그가 함께 삭제됩니다.
+                            <br />
+                            삭제된 계정은 나중에 복구할 수 있습니다.
+                        </p>
+                        <button
+                            onClick={() => setShowDeleteAccountModal(true)}
+                            className="mt-4 rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 dark:border-red-500/30 dark:bg-transparent dark:text-red-400 dark:hover:bg-red-500/10"
+                        >
+                            계정 탈퇴
+                        </button>
+                    </div>
+                </section>
             </div>
 
             {/* Create Blog Modal */}
@@ -298,6 +351,60 @@ export default function AccountPage() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Account Modal */}
+            {showDeleteAccountModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+                    <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-zinc-900">
+                        <h3 className="text-xl font-bold text-red-600 dark:text-red-400">계정 탈퇴</h3>
+
+                        <div className="mt-4 rounded-lg bg-red-50 p-4 dark:bg-red-500/10">
+                            <p className="text-sm text-red-700 dark:text-red-300">
+                                ⚠️ 계정을 탈퇴하면 다음과 같은 일이 발생합니다:
+                            </p>
+                            <ul className="mt-2 list-disc pl-5 text-sm text-red-600/80 dark:text-red-400/80">
+                                <li>모든 블로그가 삭제됩니다</li>
+                                <li>모든 게시글이 비공개 처리됩니다</li>
+                                <li>로그아웃됩니다</li>
+                            </ul>
+                        </div>
+
+                        <div className="mt-6">
+                            <label className="block text-sm font-medium text-black dark:text-white">
+                                확인을 위해 <span className="font-bold text-red-600 dark:text-red-400">&quot;탈퇴합니다&quot;</span>를 입력해주세요
+                            </label>
+                            <input
+                                type="text"
+                                value={deleteConfirmText}
+                                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                                placeholder="탈퇴합니다"
+                                className="mt-2 w-full rounded-lg border border-red-300 bg-transparent px-4 py-3 text-black outline-none focus:border-red-500 dark:border-red-500/30 dark:text-white dark:focus:border-red-500"
+                                autoFocus
+                            />
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowDeleteAccountModal(false)
+                                    setDeleteConfirmText('')
+                                }}
+                                className="rounded-lg px-4 py-2 text-sm font-medium text-black/50 hover:text-black dark:text-white/50 dark:hover:text-white"
+                            >
+                                취소
+                            </button>
+                            <button
+                                onClick={handleDeleteAccount}
+                                disabled={deleteConfirmText !== '탈퇴합니다' || deleteAccountLoading}
+                                className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 hover:bg-red-700"
+                            >
+                                {deleteAccountLoading ? '처리 중...' : '계정 탈퇴'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

@@ -68,7 +68,7 @@ const BlogSkinContext = createContext<BlogSkinContextType>({
   cssVariables: {},
   layoutConfig: defaultLayoutConfig,
   isLoading: true,
-  refreshSkin: async () => {},
+  refreshSkin: async () => { },
 })
 
 export function useBlogSkin() {
