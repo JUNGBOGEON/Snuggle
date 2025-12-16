@@ -13,8 +13,6 @@ export default function Header() {
     const { user, isLoading } = useUserStore()
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
-
-    // Refs for tab pill animation
     const tabContainerRef = useRef<HTMLDivElement>(null)
     const skinsTabRef = useRef<HTMLAnchorElement>(null)
     const marketplaceTabRef = useRef<HTMLAnchorElement>(null)
