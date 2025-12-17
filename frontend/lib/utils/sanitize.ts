@@ -30,6 +30,83 @@ export function sanitizeCSS(css: string): string {
   return sanitized
 }
 
+/**
+ * CSS를 특정 컨테이너 내부에만 적용되도록 스코핑
+ * 모든 선택자 앞에 containerSelector를 붙임
+ */
+export function scopeCSS(css: string, containerSelector: string): string {
+  if (!css.trim()) return ''
+
+  // 먼저 위험한 패턴 제거
+  let scoped = sanitizeCSS(css)
+
+  // CSS 규칙 파싱 및 스코핑
+  // @media, @keyframes 등의 at-rule 처리
+  scoped = scoped.replace(
+    /([^{}@]+)(\{[^{}]*\})/g,
+    (match, selectors: string, body: string) => {
+      // at-rule 내부가 아닌 일반 선택자만 처리
+      const scopedSelectors = selectors
+        .split(',')
+        .map((selector: string) => {
+          const trimmed = selector.trim()
+          if (!trimmed) return ''
+
+          // body, html, :root 등 전역 선택자는 컨테이너로 대체
+          if (/^(body|html|:root)$/i.test(trimmed)) {
+            return containerSelector
+          }
+
+          // * 선택자는 컨테이너 하위로
+          if (trimmed === '*') {
+            return `${containerSelector} *`
+          }
+
+          // 이미 스코핑된 경우 건너뛰기
+          if (trimmed.startsWith(containerSelector)) {
+            return trimmed
+          }
+
+          // 일반 선택자에 컨테이너 프리픽스 추가
+          return `${containerSelector} ${trimmed}`
+        })
+        .filter(Boolean)
+        .join(', ')
+
+      return `${scopedSelectors}${body}`
+    }
+  )
+
+  // @media 쿼리 내부도 처리
+  scoped = scoped.replace(
+    /@media[^{]+\{([\s\S]*?)\}\s*\}/g,
+    (match, content: string) => {
+      const mediaQuery = match.substring(0, match.indexOf('{') + 1)
+      const scopedContent = content.replace(
+        /([^{}]+)(\{[^{}]*\})/g,
+        (innerMatch, selectors: string, body: string) => {
+          const scopedSelectors = selectors
+            .split(',')
+            .map((selector: string) => {
+              const trimmed = selector.trim()
+              if (!trimmed) return ''
+              if (/^(body|html|:root)$/i.test(trimmed)) return containerSelector
+              if (trimmed === '*') return `${containerSelector} *`
+              if (trimmed.startsWith(containerSelector)) return trimmed
+              return `${containerSelector} ${trimmed}`
+            })
+            .filter(Boolean)
+            .join(', ')
+          return `${scopedSelectors}${body}`
+        }
+      )
+      return `${mediaQuery}${scopedContent}}`
+    }
+  )
+
+  return scoped
+}
+
 // 날짜 포맷 함수
 export function formatPreviewDate(dateString: string): string {
   const date = new Date(dateString)

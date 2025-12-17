@@ -326,6 +326,7 @@ export interface BlogCustomSkin {
 
 // 커스텀 스킨 업데이트 데이터 타입
 export interface CustomSkinUpdateData {
+  html_template?: string  // 통합 HTML 템플릿 (에디터용)
   html_head?: string
   html_header?: string
   html_post_list?: string
@@ -593,12 +594,15 @@ export function getDefaultTemplates(): Omit<BlogCustomSkin, 'id' | 'blog_id' | '
       <span class="divider">/</span>
       <a href="/blog/{{blog_id}}" class="blog-name">{{blog_name}}</a>
     </div>
-    <nav class="header-nav">
-      <a href="/" class="nav-link">홈</a>
-      <a href="/feed" class="nav-link">피드</a>
-      <a href="/skins" class="nav-link">스킨</a>
-      <a href="/forum" class="nav-link">포럼</a>
-    </nav>
+    <div class="header-right">
+      <nav class="header-nav">
+        <a href="/" class="nav-link">홈</a>
+        <a href="/feed" class="nav-link">피드</a>
+        <a href="/skins" class="nav-link">스킨</a>
+        <a href="/forum" class="nav-link">포럼</a>
+      </nav>
+      <a href="/blog/{{blog_id}}/write" class="write-btn">글쓰기</a>
+    </div>
   </div>
 </header>`,
 
@@ -807,6 +811,27 @@ export function getDefaultTemplates(): Omit<BlogCustomSkin, 'id' | 'blog_id' | '
 .blog-header .nav-link.active {
   color: var(--blog-fg, #000000);
   font-weight: 700;
+}
+
+.blog-header .header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.blog-header .write-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--blog-bg, #ffffff);
+  background-color: var(--blog-accent, #000000);
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.blog-header .write-btn:hover {
+  opacity: 0.9;
 }
 
 /* 게시글 목록 */

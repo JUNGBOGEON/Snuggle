@@ -17,22 +17,211 @@ import {
 import AIChatPanel from '@/components/skin/AIChatPanel'
 import type { User } from '@supabase/supabase-js'
 
+// 기본 HTML 템플릿
+function getDefaultHTMLTemplate(): string {
+  return `<!-- 헤더 -->
+<header class="blog-header">
+  <img src="{{profile_image}}" alt="프로필" class="profile-img">
+  <div class="blog-info">
+    <h1 class="blog-title">{{blog_name}}</h1>
+    <p class="blog-desc">{{blog_description}}</p>
+  </div>
+</header>
+
+<!-- 게시글 목록 -->
+<section class="post-grid">
+  {{#posts}}
+    {{> post_item}}
+  {{/posts}}
+</section>
+
+<!-- 게시글 아이템 (반복) -->
+<article class="post-card">
+  <a href="{{post_url}}">
+    <img src="{{thumbnail_url}}" alt="" class="post-card-thumbnail">
+  </a>
+  <div class="post-card-content">
+    <h3 class="post-card-title"><a href="{{post_url}}">{{post_title}}</a></h3>
+    <p class="post-card-excerpt">{{post_excerpt}}</p>
+    <time class="post-card-date">{{post_date}}</time>
+  </div>
+</article>
+
+<!-- 게시글 상세 -->
+<article class="post-detail">
+  <h1 class="post-detail-title">{{post_title}}</h1>
+  <time class="post-detail-date">{{post_date}}</time>
+  <div class="post-detail-content">{{{post_content}}}</div>
+</article>
+
+<!-- 사이드바 -->
+<aside class="sidebar">
+  <h3 class="sidebar-title">About</h3>
+  <p class="sidebar-text">{{blog_description}}</p>
+</aside>
+
+<!-- 푸터 -->
+<footer class="blog-footer">
+  <p>© {{blog_name}}</p>
+</footer>`
+}
+
+// 기본 CSS
+function getDefaultCSS(): string {
+  return `:root {
+  --bg: #fafafa;
+  --card: #ffffff;
+  --text: #18181b;
+  --text-secondary: #71717a;
+  --accent: #7c3aed;
+  --border: #e4e4e7;
+  --shadow: rgba(0,0,0,0.05);
+}
+
+.custom-skin-wrapper {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-family: 'Pretendard', -apple-system, sans-serif;
+}
+
+.blog-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.profile-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.blog-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.blog-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0;
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  padding: 2rem;
+}
+
+.post-card {
+  background: var(--card);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 6px var(--shadow);
+  transition: transform 0.2s;
+}
+
+.post-card:hover {
+  transform: translateY(-4px);
+}
+
+.post-card-thumbnail {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+}
+
+.post-card-content {
+  padding: 1rem;
+}
+
+.post-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.post-card-excerpt {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.post-card-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.post-detail {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.post-detail-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.post-detail-date {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 2rem;
+  display: block;
+}
+
+.post-detail-content {
+  line-height: 1.8;
+}
+
+.sidebar {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+}
+
+.sidebar-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0 0 0.75rem;
+}
+
+.sidebar-text {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.blog-footer {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+}`
+}
+
 interface Blog {
   id: string
   name: string
   description: string | null
 }
 
-type TemplateKey = 'html_head' | 'html_header' | 'html_post_list' | 'html_post_item' | 'html_post_detail' | 'html_sidebar' | 'html_footer' | 'custom_css'
+type TemplateKey = 'html_template' | 'custom_css'
 
 const TEMPLATE_SECTIONS: { key: TemplateKey; label: string; icon: string; description: string }[] = [
-  { key: 'html_head', label: 'Head', icon: '🔧', description: '메타태그, 외부 폰트/스크립트' },
-  { key: 'html_header', label: '헤더', icon: '📌', description: '상단 네비게이션 영역' },
-  { key: 'html_post_list', label: '게시글 목록', icon: '📋', description: '게시글 목록 페이지' },
-  { key: 'html_post_item', label: '게시글 아이템', icon: '📝', description: '목록에서 반복되는 아이템' },
-  { key: 'html_post_detail', label: '게시글 상세', icon: '📄', description: '게시글 상세 페이지' },
-  { key: 'html_sidebar', label: '사이드바', icon: '📊', description: '사이드바 영역' },
-  { key: 'html_footer', label: '푸터', icon: '📎', description: '하단 푸터 영역' },
+  { key: 'html_template', label: 'HTML', icon: '📄', description: '전체 HTML 템플릿' },
   { key: 'custom_css', label: 'CSS', icon: '🎨', description: '커스텀 스타일시트' },
 ]
 
@@ -47,7 +236,7 @@ export default function CustomSkinEditorPage() {
 
   const [customSkin, setCustomSkin] = useState<BlogCustomSkin | null>(null)
   const [editedData, setEditedData] = useState<CustomSkinUpdateData>({})
-  const [activeSection, setActiveSection] = useState<TemplateKey>('html_header')
+  const [activeSection, setActiveSection] = useState<TemplateKey>('html_template')
   const [hasChanges, setHasChanges] = useState(false)
   const [showVariables, setShowVariables] = useState(false)
   const [showAIChat, setShowAIChat] = useState(false)
@@ -88,29 +277,34 @@ export default function CustomSkinEditorPage() {
         const skin = await getCustomSkin(blogData.id)
         if (skin) {
           setCustomSkin(skin)
+          // 기존 개별 섹션들을 하나의 html_template으로 병합
+          const mergedHtml = [
+            skin.html_header,
+            skin.html_post_list,
+            skin.html_post_item,
+            skin.html_post_detail,
+            skin.html_sidebar,
+            skin.html_footer,
+          ].filter(Boolean).join('\n\n')
+
           setEditedData({
-            html_head: skin.html_head,
-            html_header: skin.html_header,
-            html_post_list: skin.html_post_list,
-            html_post_item: skin.html_post_item,
-            html_post_detail: skin.html_post_detail,
-            html_sidebar: skin.html_sidebar,
-            html_footer: skin.html_footer,
+            html_template: mergedHtml || getDefaultHTMLTemplate(),
             custom_css: skin.custom_css,
             is_active: skin.is_active,
-            use_default_header: skin.use_default_header,
-            use_default_sidebar: skin.use_default_sidebar,
-            use_default_footer: skin.use_default_footer,
           })
         } else {
           // 기본 템플릿으로 초기화
-          const defaults = getDefaultTemplates()
-          setEditedData(defaults)
+          setEditedData({
+            html_template: getDefaultHTMLTemplate(),
+            custom_css: getDefaultCSS(),
+          })
         }
       } catch (err) {
         console.error('Failed to load custom skin:', err)
-        const defaults = getDefaultTemplates()
-        setEditedData(defaults)
+        setEditedData({
+          html_template: getDefaultHTMLTemplate(),
+          custom_css: getDefaultCSS(),
+        })
       }
 
       setLoading(false)
@@ -125,11 +319,17 @@ export default function CustomSkinEditorPage() {
     setHasChanges(true)
   }, [])
 
-  // AI 생성 코드 삽입
-  const handleInsertCode = useCallback((code: string) => {
-    handleEditorChange(activeSection, code)
-    toast.showToast('코드가 에디터에 삽입되었습니다')
-  }, [activeSection, handleEditorChange, toast])
+  // AI 생성 디자인 자동 적용 (HTML + CSS)
+  const handleApplyDesign = useCallback((sections: Record<string, string>) => {
+    if (sections.html_template) {
+      setEditedData(prev => ({ ...prev, html_template: sections.html_template }))
+    }
+    if (sections.custom_css) {
+      setEditedData(prev => ({ ...prev, custom_css: sections.custom_css }))
+    }
+    setHasChanges(true)
+    toast.showToast('디자인이 적용되었습니다')
+  }, [toast])
 
   // 저장
   const handleSave = async () => {
@@ -137,7 +337,18 @@ export default function CustomSkinEditorPage() {
 
     setSaving(true)
     try {
-      const saved = await saveCustomSkin(blog.id, editedData)
+      // html_template을 기존 필드에 매핑 (html_header에 전체 HTML 저장)
+      const saveData: CustomSkinUpdateData = {
+        html_header: editedData.html_template,
+        html_post_list: '',
+        html_post_item: '',
+        html_post_detail: '',
+        html_sidebar: '',
+        html_footer: '',
+        custom_css: editedData.custom_css,
+        is_active: editedData.is_active,
+      }
+      const saved = await saveCustomSkin(blog.id, saveData)
       setCustomSkin(saved)
       setHasChanges(false)
       toast.showToast('저장되었습니다')
@@ -180,8 +391,10 @@ export default function CustomSkinEditorPage() {
 
     try {
       await resetCustomSkin(blog.id)
-      const defaults = getDefaultTemplates()
-      setEditedData(defaults)
+      setEditedData({
+        html_template: getDefaultHTMLTemplate(),
+        custom_css: getDefaultCSS(),
+      })
       setCustomSkin(null)
       setHasChanges(false)
       toast.showToast('초기화되었습니다')
@@ -193,12 +406,9 @@ export default function CustomSkinEditorPage() {
 
   // 기본 템플릿 불러오기
   const handleLoadDefault = (key: TemplateKey) => {
-    const defaults = getDefaultTemplates()
-    const defaultValue = defaults[key as keyof typeof defaults]
-    if (typeof defaultValue === 'string') {
-      handleEditorChange(key, defaultValue)
-      toast.showToast('기본 템플릿을 불러왔습니다')
-    }
+    const defaultValue = key === 'html_template' ? getDefaultHTMLTemplate() : getDefaultCSS()
+    handleEditorChange(key, defaultValue)
+    toast.showToast('기본 템플릿을 불러왔습니다')
   }
 
   if (loading) {
@@ -422,11 +632,10 @@ export default function CustomSkinEditorPage() {
 
       {/* AI Chat Panel */}
       <AIChatPanel
-        activeSection={activeSection}
-        currentCode={currentValue}
-        onInsertCode={handleInsertCode}
+        onApplyDesign={handleApplyDesign}
         isOpen={showAIChat}
         onToggle={() => setShowAIChat(!showAIChat)}
+        currentSections={editedData}
       />
     </div>
   )

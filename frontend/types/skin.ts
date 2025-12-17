@@ -33,4 +33,4 @@ export interface PreviewCategory {
 }
 
 export type TabType = 'all' | 'official' | 'community'
-export type TemplateKey = 'html_head' | 'html_header' | 'html_post_list' | 'html_post_item' | 'html_post_detail' | 'html_sidebar' | 'html_footer' | 'custom_css'
+export type TemplateKey = 'html_template' | 'custom_css'
