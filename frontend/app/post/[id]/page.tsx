@@ -1,5 +1,7 @@
 'use client'
 
+export const runtime = 'edge'
+
 import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getPost, incrementViewCount, PostWithDetails } from '@/lib/api/posts'
