@@ -169,7 +169,15 @@ ${skin.html_sidebar || ''}
 ${skin.html_footer || ''}`
               }
 
-              const finalCss = skin.custom_css || defaultCombined.custom_css
+              let finalCss = skin.custom_css || defaultCombined.custom_css
+
+              // 핫픽스: 기존 스킨 CSS에 white-space: pre-wrap이 없으면 자동 추가 (줄바꿈 버그 수정)
+              if (finalCss && !finalCss.includes('white-space: pre-wrap')) {
+                finalCss = finalCss.replace(
+                  /.post-item .post-excerpt\s*{([^}]*)}/,
+                  (match, content) => `.post-item .post-excerpt {${content}  white-space: pre-wrap;\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n}`
+                )
+              }
 
               setEditedData({
                 html_template: mergedHtml || defaultCombined.html_template,
@@ -204,7 +212,14 @@ ${skin.html_footer || ''}`
                 title: p.title,
                 content: p.content,
                 // excerpt가 없으므로 content에서 첫 100자 추출
-                excerpt: p.content ? p.content.replace(/<[^>]*>/g, '').substring(0, 100) : '',
+                excerpt: p.content
+                  ? p.content
+                    .replace(/<br\s*\/?>/gi, '\n')
+                    .replace(/<\/p>/gi, '\n')
+                    .replace(/<\/div>/gi, '\n')
+                    .replace(/<[^>]*>/g, '')
+                    .substring(0, 100)
+                  : '',
                 thumbnail_url: p.thumbnail_url,
                 created_at: p.created_at,
                 view_count: p.view_count,
@@ -689,11 +704,10 @@ ${skin.html_footer || ''}`
                   <button
                     key={tab.key}
                     onClick={() => setActiveTab(tab.key as TabType)}
-                    className={`relative px-4 py-2 text-sm font-medium transition-colors ${
-                      activeTab === tab.key
-                        ? 'text-black dark:text-white'
-                        : 'text-black/40 hover:text-black/70 dark:text-white/40 dark:hover:text-white/70'
-                    }`}
+                    className={`relative px-4 py-2 text-sm font-medium transition-colors ${activeTab === tab.key
+                      ? 'text-black dark:text-white'
+                      : 'text-black/40 hover:text-black/70 dark:text-white/40 dark:hover:text-white/70'
+                      }`}
                   >
                     <span className="flex items-center gap-1.5">
                       {tab.icon && (
@@ -789,11 +803,10 @@ ${skin.html_footer || ''}`
                   <button
                     key={section.key}
                     onClick={() => setActiveSection(section.key)}
-                    className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                      activeSection === section.key
-                        ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-                        : 'text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
-                    }`}
+                    className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${activeSection === section.key
+                      ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+                      : 'text-neutral-500 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+                      }`}
                   >
                     <span className="mr-1">{section.icon}</span>
                     {section.label}
@@ -814,11 +827,10 @@ ${skin.html_footer || ''}`
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setShowVariables(!showVariables)}
-                    className={`rounded px-2 py-1 text-xs transition-colors ${
-                      showVariables
-                        ? 'bg-violet-900/50 text-violet-400'
-                        : 'text-neutral-400 hover:bg-neutral-700'
-                    }`}
+                    className={`rounded px-2 py-1 text-xs transition-colors ${showVariables
+                      ? 'bg-violet-900/50 text-violet-400'
+                      : 'text-neutral-400 hover:bg-neutral-700'
+                      }`}
                   >
                     {'{{'} 변수 참조 {'}}'}
                   </button>
@@ -1679,11 +1691,10 @@ ${skin.html_footer || ''}`
                 </label>
                 <div className="space-y-2">
                   <label
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                      deployData.is_public
-                        ? 'border-violet-500 bg-violet-50 dark:border-violet-500 dark:bg-violet-900/20'
-                        : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
-                    }`}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${deployData.is_public
+                      ? 'border-violet-500 bg-violet-50 dark:border-violet-500 dark:bg-violet-900/20'
+                      : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
+                      }`}
                   >
                     <input
                       type="radio"
@@ -1706,11 +1717,10 @@ ${skin.html_footer || ''}`
                   </label>
 
                   <label
-                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${
-                      !deployData.is_public
-                        ? 'border-violet-500 bg-violet-50 dark:border-violet-500 dark:bg-violet-900/20'
-                        : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
-                    }`}
+                    className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-colors ${!deployData.is_public
+                      ? 'border-violet-500 bg-violet-50 dark:border-violet-500 dark:bg-violet-900/20'
+                      : 'border-neutral-200 hover:border-neutral-300 dark:border-neutral-700 dark:hover:border-neutral-600'
+                      }`}
                   >
                     <input
                       type="radio"

@@ -916,8 +916,11 @@ export function getDefaultTemplates(): Omit<BlogCustomSkin, 'id' | 'blog_id' | '
   color: var(--blog-muted, #666666);
   margin: 0.375rem 0 0;
   overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: pre-wrap;
 }
 
 .post-item .post-meta {
