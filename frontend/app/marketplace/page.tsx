@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import dynamic from 'next/dynamic'
-import DOMPurify from 'dompurify'
 import {
   getMarketplaceSkins,
   downloadSkin,
@@ -23,88 +22,15 @@ import {
 } from '@/lib/api/skins'
 import { getVisitorCount } from '@/lib/api/blogs'
 import { renderTemplate, TemplateContext } from '@/lib/utils/templateRenderer'
+import { sanitizeHTML, sanitizeCSS, formatPreviewDate } from '@/lib/utils/sanitize'
 import Toast from '@/components/common/Toast'
 import AIChatPanel from '@/components/skin/AIChatPanel'
+import { TEMPLATE_SECTIONS } from './_constants/templateSections'
 import type { User } from '@supabase/supabase-js'
+import type { Blog, PreviewPost, PreviewCategory, TabType, TemplateKey } from '@/types/skin'
 
 // Monaco Editor 동적 로드 (SSR 비활성화)
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false })
-
-// DOMPurify 설정
-const ALLOWED_TAGS: string[] = [
-  'div', 'span', 'p', 'a', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-  'ul', 'ol', 'li', 'br', 'hr', 'strong', 'em', 'b', 'i', 'u',
-  'header', 'footer', 'nav', 'main', 'aside', 'article', 'section',
-  'figure', 'figcaption', 'blockquote', 'pre', 'code',
-  'table', 'thead', 'tbody', 'tr', 'th', 'td', 'button', 'svg', 'path',
-]
-
-const ALLOWED_ATTR: string[] = [
-  'class', 'id', 'href', 'src', 'alt', 'title', 'style',
-  'data-post-id', 'data-blog-id', 'data-category-id',
-  'target', 'rel', 'width', 'height', 'loading',
-  'viewBox', 'fill', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin', 'd',
-]
-
-function sanitizeHTML(html: string): string {
-  if (typeof window === 'undefined') return ''
-  return DOMPurify.sanitize(html, { ALLOWED_TAGS, ALLOWED_ATTR, ALLOW_DATA_ATTR: true })
-}
-
-function sanitizeCSS(css: string): string {
-  const dangerousPatterns = [/expression\s*\(/gi, /javascript\s*:/gi, /behavior\s*:/gi, /@import\s+url\s*\(/gi]
-  let sanitized = css
-  for (const pattern of dangerousPatterns) {
-    sanitized = sanitized.replace(pattern, '/* blocked */')
-  }
-  return sanitized
-}
-
-// 미리보기용 데이터 타입
-interface PreviewPost {
-  id: string
-  title: string
-  content?: string
-  excerpt?: string
-  thumbnail_url?: string | null
-  created_at: string
-  view_count?: number
-  like_count?: number
-  blog_id: string
-  category?: { id: string; name: string }
-}
-
-interface PreviewCategory {
-  id: string
-  name: string
-}
-
-// 날짜 포맷 함수
-function formatPreviewDate(dateString: string): string {
-  const date = new Date(dateString)
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`
-}
-
-type TabType = 'all' | 'official' | 'community'
-type TemplateKey = 'html_head' | 'html_header' | 'html_post_list' | 'html_post_item' | 'html_post_detail' | 'html_sidebar' | 'html_footer' | 'custom_css'
-
-const TEMPLATE_SECTIONS: { key: TemplateKey; label: string; icon: string; description: string }[] = [
-  { key: 'html_head', label: 'Head', icon: '🔧', description: '메타태그, 폰트' },
-  { key: 'html_header', label: '헤더', icon: '📌', description: '상단 영역' },
-  { key: 'html_post_list', label: '목록', icon: '📋', description: '게시글 목록' },
-  { key: 'html_post_item', label: '아이템', icon: '📝', description: '반복 아이템' },
-  { key: 'html_post_detail', label: '상세', icon: '📄', description: '게시글 상세' },
-  { key: 'html_sidebar', label: '사이드바', icon: '📊', description: '사이드바' },
-  { key: 'html_footer', label: '푸터', icon: '📎', description: '하단 영역' },
-  { key: 'custom_css', label: 'CSS', icon: '🎨', description: '스타일시트' },
-]
-
-interface Blog {
-  id: string
-  name: string
-  description: string | null
-  thumbnail_url: string | null
-}
 
 export default function MarketplacePage() {
   const [user, setUser] = useState<User | null>(null)
